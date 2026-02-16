@@ -101,6 +101,9 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ checkedIn: true }),
     });
+    if (selectedKid && selectedKid.kid.id === kidId) {
+      setSelectedKid({ ...selectedKid, kid: { ...selectedKid.kid, checkedIn: true } });
+    }
     loadData();
   };
 
@@ -110,6 +113,9 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ checkedOut: true }),
     });
+    if (selectedKid && selectedKid.kid.id === kidId) {
+      setSelectedKid({ ...selectedKid, kid: { ...selectedKid.kid, checkedOut: true } });
+    }
     loadData();
   };
 
