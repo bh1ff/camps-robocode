@@ -130,13 +130,17 @@ export async function POST(
     const groups = await prisma.group.findMany({ where: { campId } });
     const scheduleSlots: { groupId: string; sessionId: string; areaId: string }[] = [];
 
-    groups.forEach((group, groupIndex) => {
-      sessions.forEach((session, sessionIndex) => {
+    type GroupType = { id: string };
+    type SessionType = { id: string };
+    type AreaType = { id: string };
+
+    (groups as GroupType[]).forEach((group: GroupType, groupIndex: number) => {
+      (sessions as SessionType[]).forEach((session: SessionType, sessionIndex: number) => {
         const areaIndex = (groupIndex + sessionIndex) % areas.length;
         scheduleSlots.push({
           groupId: group.id,
           sessionId: session.id,
-          areaId: areas[areaIndex].id,
+          areaId: (areas as AreaType[])[areaIndex].id,
         });
       });
     });
