@@ -64,6 +64,7 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
   const [newKid, setNewKid] = useState({ name: '', parentName: '', age: '', allergies: '' });
   const [addKidMessage, setAddKidMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [removeCheckInConfirm, setRemoveCheckInConfirm] = useState<{ kidId: string; kidName: string } | null>(null);
+  const [removeCollectedConfirm, setRemoveCollectedConfirm] = useState<{ kidId: string; kidName: string } | null>(null);
   const [checkInFilter, setCheckInFilter] = useState<'all' | 'checked-in' | 'not-checked-in'>('all');
   const router = useRouter();
 
@@ -119,6 +120,17 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
       body: JSON.stringify({ checkedIn: false }),
     });
     setRemoveCheckInConfirm(null);
+    setSelectedKid(null);
+    loadData();
+  };
+
+  const handleRemoveCollected = async (kidId: string) => {
+    await fetch(`/api/camps/${campId}/kids/${kidId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkedOut: false }),
+    });
+    setRemoveCollectedConfirm(null);
     setSelectedKid(null);
     loadData();
   };
@@ -496,12 +508,20 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                           {selectedKid.kid.checkedOut ? 'Collected' : 'Mark Collected'}
                         </button>
                       </div>
-                      {selectedKid.kid.checkedIn && !selectedKid.kid.checkedOut && (
+                      {selectedKid.kid.checkedIn && (
                         <button
                           onClick={() => setRemoveCheckInConfirm({ kidId: selectedKid.kid.id, kidName: selectedKid.kid.name })}
                           className="w-full py-2 px-4 rounded-xl font-semibold text-red-600 border-2 border-red-200 hover:bg-red-50 transition-colors"
                         >
                           Remove Check-In
+                        </button>
+                      )}
+                      {selectedKid.kid.checkedOut && (
+                        <button
+                          onClick={() => setRemoveCollectedConfirm({ kidId: selectedKid.kid.id, kidName: selectedKid.kid.name })}
+                          className="w-full py-2 px-4 rounded-xl font-semibold text-orange-600 border-2 border-orange-200 hover:bg-orange-50 transition-colors"
+                        >
+                          Undo Collected
                         </button>
                       )}
                     </div>
@@ -788,6 +808,32 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 className="flex-1 py-3 px-4 rounded-xl font-semibold bg-red-600 text-white hover:bg-red-700"
               >
                 Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Undo Collected Confirmation Modal */}
+      {removeCollectedConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setRemoveCollectedConfirm(null)}>
+          <div className="robo-card p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-heading text-[#003439] mb-2">Undo Collected?</h2>
+            <p className="text-[#05575c]/70 mb-6">
+              Are you sure you want to undo the collected status for <strong>{removeCollectedConfirm.kidName}</strong>?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRemoveCollectedConfirm(null)}
+                className="flex-1 py-3 px-4 rounded-xl font-semibold border-2 border-gray-200 text-[#05575c] hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRemoveCollected(removeCollectedConfirm.kidId)}
+                className="flex-1 py-3 px-4 rounded-xl font-semibold bg-orange-600 text-white hover:bg-orange-700"
+              >
+                Undo
               </button>
             </div>
           </div>
