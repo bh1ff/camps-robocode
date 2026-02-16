@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Robocode Camp",
   description: "Camp Management System",
+  icons: {
+    icon: "/mascot.png",
+    apple: "/mascot.png",
+  },
 };
 
 export default function RootLayout({

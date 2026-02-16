@@ -152,9 +152,7 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
       <header className="robo-gradient shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#00adb3] rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-lg">RC</span>
-            </div>
+            <img src="/logo.png" alt="Robocode" className="h-10 object-contain" />
             <div>
               <h1 className="text-xl font-heading text-white">ROBOCODE CAMP</h1>
               <p className="text-white/60 text-sm">Teacher View</p>
