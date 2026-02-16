@@ -65,7 +65,7 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
   const [addKidMessage, setAddKidMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [removeCheckInConfirm, setRemoveCheckInConfirm] = useState<{ kidId: string; kidName: string } | null>(null);
   const [removeCollectedConfirm, setRemoveCollectedConfirm] = useState<{ kidId: string; kidName: string } | null>(null);
-  const [checkInFilter, setCheckInFilter] = useState<'all' | 'checked-in' | 'not-checked-in'>('all');
+  const [checkInFilter, setCheckInFilter] = useState<'all' | 'checked-in' | 'not-checked-in' | 'collected'>('all');
   const router = useRouter();
 
   const loadData = useCallback(async () => {
@@ -200,7 +200,9 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
     ? allKids
     : checkInFilter === 'checked-in'
       ? allKids.filter(({ kid }) => kid.checkedIn)
-      : allKids.filter(({ kid }) => !kid.checkedIn);
+      : checkInFilter === 'collected'
+        ? allKids.filter(({ kid }) => kid.checkedOut)
+        : allKids.filter(({ kid }) => !kid.checkedIn);
 
   const searchResults = searchQuery.length >= 2
     ? filteredByCheckIn.filter(({ kid }) => kid.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -394,6 +396,16 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 >
                   Not Checked In ({allKids.filter(k => !k.kid.checkedIn).length})
                 </button>
+                <button
+                  onClick={() => setCheckInFilter('collected')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    checkInFilter === 'collected'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+                  }`}
+                >
+                  Collected ({allKids.filter(k => k.kid.checkedOut).length})
+                </button>
               </div>
 
               {/* Add Kid Form */}
@@ -578,7 +590,7 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
             {(searchQuery.length >= 2 ? searchResults.length > 0 : filteredByCheckIn.length > 0) && (
               <div className="robo-card p-6">
                 <h2 className="text-lg font-heading text-[#003439] mb-4">
-                  {searchQuery.length >= 2 ? 'Search Results' : checkInFilter === 'checked-in' ? 'Checked In Campers' : checkInFilter === 'not-checked-in' ? 'Not Checked In Campers' : 'All Campers'}
+                  {searchQuery.length >= 2 ? 'Search Results' : checkInFilter === 'checked-in' ? 'Checked In Campers' : checkInFilter === 'not-checked-in' ? 'Not Checked In Campers' : checkInFilter === 'collected' ? 'Collected Campers' : 'All Campers'}
                 </h2>
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
                   {(searchQuery.length >= 2 ? searchResults : filteredByCheckIn).map(({ kid, groupId }) => (
