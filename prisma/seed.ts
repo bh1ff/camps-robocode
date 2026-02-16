@@ -89,16 +89,19 @@ async function main() {
     console.log(`Created Group ${groupName} with ${groupData.kids.length} kids`);
   }
 
-  // Create rotation schedule (from existing schedule data)
+  // Create rotation schedule - each group does each SUBJECT TYPE once per day
+  // Areas: 0=Robotics A, 1=Robotics B, 2=3DPA, 3=3DPB, 4=GameDev A, 5=GameDev B, 6=Game Area
+  // Subject types: robotics(0,1), 3dprinting(2,3), gamedev(4,5), game(6)
+  // Groups A,C,E,G use "A" variant rooms; Groups B,D,F,H use "B" variant rooms
   const rotation: Record<string, number[]> = {
-    'A': [0, 1, 2, 3],
-    'B': [1, 2, 3, 4],
-    'C': [2, 3, 4, 5],
-    'D': [3, 4, 5, 6],
-    'E': [4, 5, 6, 0],
-    'F': [5, 6, 0, 1],
-    'G': [6, 0, 1, 2],
-    'H': [0, 2, 4, 6],
+    'A': [0, 2, 4, 6], // Robotics A → 3DPA → GameDev A → Game Area
+    'B': [1, 3, 5, 6], // Robotics B → 3DPB → GameDev B → Game Area
+    'C': [2, 4, 6, 0], // 3DPA → GameDev A → Game Area → Robotics A
+    'D': [3, 5, 6, 1], // 3DPB → GameDev B → Game Area → Robotics B
+    'E': [4, 6, 0, 2], // GameDev A → Game Area → Robotics A → 3DPA
+    'F': [5, 6, 1, 3], // GameDev B → Game Area → Robotics B → 3DPB
+    'G': [6, 0, 2, 4], // Game Area → Robotics A → 3DPA → GameDev A
+    'H': [6, 1, 3, 5], // Game Area → Robotics B → 3DPB → GameDev B
   };
 
   const groups = await prisma.group.findMany({ where: { campId: camp.id } });
