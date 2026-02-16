@@ -1,0 +1,155 @@
+{
+  "groups": {
+    "A": {
+      "ageRange": "5-7",
+      "kids": [
+        { "id": "a1", "name": "Iyas Assighaou Akhayad", "age": 5, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a2", "name": "Zakariya Latif", "age": 6, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a3", "name": "Ibrahim Bakhat", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a4", "name": "Zakariyya Aris", "age": 6, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a5", "name": "Tsz Hin Lau", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a6", "name": "Man Hei Ng", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a7", "name": "Finley Kenny", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a8", "name": "Eesa Razzaq", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a9", "name": "Waeel Saghir", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "a10", "name": "Arya Hallan", "age": 6, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "B": {
+      "ageRange": "7-8",
+      "kids": [
+        { "id": "b1", "name": "Ayaan Sethi", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b2", "name": "Haroon Mohammed", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b3", "name": "Mustafa Khalid", "age": 7, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b4", "name": "Anaya Khurshid", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b5", "name": "Ryan Chen", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b6", "name": "Dawud Hussain Sheikh", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b7", "name": "Yahya Grace-Cousins", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b8", "name": "Krish Keshvara", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b9", "name": "Zeyad Fakirane", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "b10", "name": "Patrick Kenny", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "C": {
+      "ageRange": "8-9",
+      "kids": [
+        { "id": "c1", "name": "Emily Knight", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c2", "name": "Anabia Khan", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c3", "name": "Numan Duran", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c4", "name": "Muhammad Bilal", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c5", "name": "Rueben Ashton-james", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c6", "name": "Arjun Badisa", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c7", "name": "Yusha Khalid", "age": 8, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c8", "name": "Jack Allen", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c9", "name": "Hashim Akbar", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "c10", "name": "Adam Bakhat", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "D": {
+      "ageRange": "9-10",
+      "kids": [
+        { "id": "d1", "name": "Ewaoluwa Olabisi", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d2", "name": "Aditti Archana Kannan", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d3", "name": "Ivy Britain", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d4", "name": "Jackson Aziz-Wood", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d5", "name": "Younis Mohammed", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d6", "name": "Thiago Cauldwell Velozo", "age": 9, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d7", "name": "Yusha Khan", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d8", "name": "Youssef Assighaou Akhayad", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d9", "name": "Ariya Khanom", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "d10", "name": "Oluwademilade Olabisi", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "E": {
+      "ageRange": "10-11",
+      "kids": [
+        { "id": "e1", "name": "Rory Britain", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e2", "name": "Charlie Earp", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e3", "name": "Haaris Zaman", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e4", "name": "Luca Dumitru", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e5", "name": "Natasha Dempsey", "age": 10, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e6", "name": "Abdullah Khalid", "age": 10, "allergies": "Kiwi", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e7", "name": "Yahya Khan", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e8", "name": "Eli Groat", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e9", "name": "Rocky Chen", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "e10", "name": "Hussain Akbar", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "F": {
+      "ageRange": "11-12",
+      "kids": [
+        { "id": "f1-1", "name": "Mohamed Bakhat", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-2", "name": "Zakariyah Zaman", "age": 11, "allergies": "Nuts", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-3", "name": "Daniel Knight", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-4", "name": "Daniel Raji", "age": 11, "allergies": "Nuts", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-5", "name": "Alfie Batchelor", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-6", "name": "Medina Khan", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-7", "name": "Viaan Sethi", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-8", "name": "Musa Mohammed", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-9", "name": "Saihaan Shah", "age": 11, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-10", "name": "Rais Omar Khurshid", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f1-11", "name": "Rumaisa Ayaz", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "G": {
+      "ageRange": "12-13",
+      "kids": [
+        { "id": "f2-1", "name": "Muhammad Suhayb", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-2", "name": "Safa Muhammad", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-3", "name": "Mohammed Zakir Iqbal", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-4", "name": "Aaron Wong", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-5", "name": "Charlie Bye", "age": 12, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-6", "name": "Sohaibe Assighaou Akhayad", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-7", "name": "Abdurahman Essa", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-8", "name": "Uhud Hussain", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-9", "name": "Israel Olabisi", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-10", "name": "Basma Fakirane", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f2-11", "name": "Omar Mohammed", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    },
+    "H": {
+      "ageRange": "13-15",
+      "kids": [
+        { "id": "f3-1", "name": "Richard Ogbuneke", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-2", "name": "Henry Pidd", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-3", "name": "Tyler Scott", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-4", "name": "James Himmons", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-5", "name": "Lucen Hancock", "age": 15, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-6", "name": "Aisha Ayaz", "age": 14, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-7", "name": "Shahzaib Iqbal", "age": 15, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-8", "name": "Adam Wong", "age": 14, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-9", "name": "Mikaeel Sikandar Afridi", "age": 15, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] },
+        { "id": "f3-10", "name": "Aaya Grace", "age": 13, "allergies": "", "checkedIn": false, "checkedOut": false, "attended": [] }
+      ]
+    }
+  },
+  "schedule": {
+    "sessions": [
+      { "id": 1, "time": "10:15 - 11:00", "name": "Session 1" },
+      { "id": 2, "time": "11:00 - 11:45", "name": "Session 2" },
+      { "id": 3, "time": "12:15 - 13:00", "name": "Session 3" },
+      { "id": 4, "time": "13:00 - 13:45", "name": "Session 4" }
+    ],
+    "lunch": { "time": "11:45 - 12:15", "name": "Lunch" },
+    "areas": [
+      { "id": "robotics1", "name": "Robotics A", "type": "robotics" },
+      { "id": "robotics2", "name": "Robotics B", "type": "robotics" },
+      { "id": "gamedev1", "name": "Game Dev A", "type": "gamedev" },
+      { "id": "gamedev2", "name": "Game Dev B", "type": "gamedev" },
+      { "id": "printing1", "name": "Board Room", "type": "3dprinting" },
+      { "id": "printing2", "name": "Esports Room", "type": "3dprinting" },
+      { "id": "game1", "name": "Game Area", "type": "game" },
+      { "id": "game2", "name": "Game Area", "type": "game" }
+    ],
+    "rotation": {
+      "A": ["robotics1", "gamedev1", "printing1", "game1"],
+      "B": ["robotics2", "gamedev2", "printing2", "game2"],
+      "C": ["gamedev1", "printing1", "game1", "robotics1"],
+      "D": ["gamedev2", "printing2", "game2", "robotics2"],
+      "E": ["printing1", "game1", "robotics1", "gamedev1"],
+      "F": ["printing2", "game2", "robotics2", "gamedev2"],
+      "G": ["game1", "robotics1", "gamedev1", "printing1"],
+      "H": ["game2", "robotics2", "gamedev2", "printing2"]
+    }
+  }
+}
