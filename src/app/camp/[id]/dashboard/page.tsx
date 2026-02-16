@@ -63,6 +63,8 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
   const [showAddKid, setShowAddKid] = useState(false);
   const [newKid, setNewKid] = useState({ name: '', parentName: '', age: '', allergies: '' });
   const [addKidMessage, setAddKidMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [removeCheckInConfirm, setRemoveCheckInConfirm] = useState<{ kidId: string; kidName: string } | null>(null);
+  const [checkInFilter, setCheckInFilter] = useState<'all' | 'checked-in' | 'not-checked-in'>('all');
   const router = useRouter();
 
   const loadData = useCallback(async () => {
@@ -107,6 +109,17 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ checkedOut: true }),
     });
+    loadData();
+  };
+
+  const handleRemoveCheckIn = async (kidId: string) => {
+    await fetch(`/api/camps/${campId}/kids/${kidId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checkedIn: false }),
+    });
+    setRemoveCheckInConfirm(null);
+    setSelectedKid(null);
     loadData();
   };
 
@@ -165,9 +178,15 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
   const checkedOut = allKids.filter(k => k.kid.checkedOut).length;
   const withAllergies = allKids.filter(k => k.kid.allergies).length;
 
+  const filteredByCheckIn = checkInFilter === 'all'
+    ? allKids
+    : checkInFilter === 'checked-in'
+      ? allKids.filter(({ kid }) => kid.checkedIn)
+      : allKids.filter(({ kid }) => !kid.checkedIn);
+
   const searchResults = searchQuery.length >= 2
-    ? allKids.filter(({ kid }) => kid.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : [];
+    ? filteredByCheckIn.filter(({ kid }) => kid.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : checkInFilter !== 'all' ? filteredByCheckIn : [];
 
   const getGroupSchedule = (groupId: string) => {
     const rotation = data.schedule.rotation[groupId] || [];
@@ -325,6 +344,40 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 </button>
               </div>
 
+              {/* Filter buttons */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => setCheckInFilter('all')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    checkInFilter === 'all'
+                      ? 'bg-[#003439] text-white'
+                      : 'bg-gray-100 text-[#05575c] hover:bg-gray-200'
+                  }`}
+                >
+                  All ({allKids.length})
+                </button>
+                <button
+                  onClick={() => setCheckInFilter('checked-in')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    checkInFilter === 'checked-in'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-green-50 text-green-700 hover:bg-green-100'
+                  }`}
+                >
+                  Checked In ({allKids.filter(k => k.kid.checkedIn).length})
+                </button>
+                <button
+                  onClick={() => setCheckInFilter('not-checked-in')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                    checkInFilter === 'not-checked-in'
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+                  }`}
+                >
+                  Not Checked In ({allKids.filter(k => !k.kid.checkedIn).length})
+                </button>
+              </div>
+
               {/* Add Kid Form */}
               {showAddKid && (
                 <form onSubmit={handleAddKid} className="border-t border-gray-200 pt-4 mt-4">
@@ -443,6 +496,14 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                           {selectedKid.kid.checkedOut ? 'Collected' : 'Mark Collected'}
                         </button>
                       </div>
+                      {selectedKid.kid.checkedIn && !selectedKid.kid.checkedOut && (
+                        <button
+                          onClick={() => setRemoveCheckInConfirm({ kidId: selectedKid.kid.id, kidName: selectedKid.kid.name })}
+                          className="w-full py-2 px-4 rounded-xl font-semibold text-red-600 border-2 border-red-200 hover:bg-red-50 transition-colors"
+                        >
+                          Remove Check-In
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -701,6 +762,32 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 className="w-full robo-btn py-3 rounded-xl font-semibold"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Remove Check-In Confirmation Modal */}
+      {removeCheckInConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setRemoveCheckInConfirm(null)}>
+          <div className="robo-card p-6 w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h2 className="text-xl font-heading text-[#003439] mb-2">Remove Check-In?</h2>
+            <p className="text-[#05575c]/70 mb-6">
+              Are you sure you want to remove the check-in for <strong>{removeCheckInConfirm.kidName}</strong>?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setRemoveCheckInConfirm(null)}
+                className="flex-1 py-3 px-4 rounded-xl font-semibold border-2 border-gray-200 text-[#05575c] hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleRemoveCheckIn(removeCheckInConfirm.kidId)}
+                className="flex-1 py-3 px-4 rounded-xl font-semibold bg-red-600 text-white hover:bg-red-700"
+              >
+                Remove
               </button>
             </div>
           </div>
