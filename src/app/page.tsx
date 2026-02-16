@@ -45,9 +45,7 @@ export default function HomePage() {
 
       <div className="robo-card p-8 w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-4 robo-gradient-light rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-3xl font-black text-white">RC</span>
-          </div>
+          <img src="/mascot.png" alt="Robocode" className="w-24 h-24 mx-auto mb-4 object-contain" />
           <h1 className="text-3xl font-heading text-[#003439] mb-2">ROBOCODE CAMP</h1>
           <p className="text-[#05575c] opacity-70">Camp Management System</p>
         </div>
