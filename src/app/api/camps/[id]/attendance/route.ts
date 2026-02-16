@@ -96,7 +96,7 @@ export async function PUT(
       // Remove all attendance for this group/session
       await prisma.attendance.deleteMany({
         where: {
-          kidId: { in: group.kids.map(k => k.id) },
+          kidId: { in: group.kids.map((k: { id: string }) => k.id) },
           sessionId: session.id,
         },
       });
