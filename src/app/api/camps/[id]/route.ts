@@ -75,12 +75,13 @@ export async function GET(
     }
 
     // Build rotation schedule
+    type SlotType = { groupId: string; session: { order: number }; area: { id: string } };
     const rotation: Record<string, string[]> = {};
     for (const group of camp.groups) {
       const groupSlots = scheduleSlots
-        .filter(s => s.groupId === group.id)
-        .sort((a, b) => a.session.order - b.session.order);
-      rotation[group.name] = groupSlots.map((s: { area: { id: string } }) => s.area.id);
+        .filter((s: SlotType) => s.groupId === group.id)
+        .sort((a: SlotType, b: SlotType) => a.session.order - b.session.order);
+      rotation[group.name] = groupSlots.map((s: SlotType) => s.area.id);
     }
 
     const data = {
