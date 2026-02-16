@@ -549,13 +549,13 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {(searchQuery.length >= 2 ? searchResults.length > 0 : allKids.length > 0) && (
+            {(searchQuery.length >= 2 ? searchResults.length > 0 : filteredByCheckIn.length > 0) && (
               <div className="robo-card p-6">
                 <h2 className="text-lg font-heading text-[#003439] mb-4">
-                  {searchQuery.length >= 2 ? 'Search Results' : 'All Campers'}
+                  {searchQuery.length >= 2 ? 'Search Results' : checkInFilter === 'checked-in' ? 'Checked In Campers' : checkInFilter === 'not-checked-in' ? 'Not Checked In Campers' : 'All Campers'}
                 </h2>
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                  {(searchQuery.length >= 2 ? searchResults : allKids).map(({ kid, groupId }) => (
+                  {(searchQuery.length >= 2 ? searchResults : filteredByCheckIn).map(({ kid, groupId }) => (
                     <div
                       key={kid.id}
                       onClick={() => setSelectedKid({ kid, groupId })}
