@@ -60,6 +60,9 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
   const [scheduleModal, setScheduleModal] = useState<{ groupId: string; sessionIndex: number } | null>(null);
   const [groupModal, setGroupModal] = useState<string | null>(null);
   const [showResetWarning, setShowResetWarning] = useState(false);
+  const [showAddKid, setShowAddKid] = useState(false);
+  const [newKid, setNewKid] = useState({ name: '', parentName: '', age: '', allergies: '' });
+  const [addKidMessage, setAddKidMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const router = useRouter();
 
   const loadData = useCallback(async () => {
@@ -175,6 +178,32 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
     }));
   };
 
+  const handleAddKid = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddKidMessage(null);
+
+    if (!newKid.name || !newKid.age) {
+      setAddKidMessage({ type: 'error', text: 'Name and age are required' });
+      return;
+    }
+
+    const res = await fetch(`/api/camps/${campId}/kids`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newKid),
+    });
+
+    const result = await res.json();
+    if (result.success) {
+      setAddKidMessage({ type: 'success', text: result.message });
+      setNewKid({ name: '', parentName: '', age: '', allergies: '' });
+      loadData(); // Refresh data
+      setTimeout(() => setAddKidMessage(null), 3000);
+    } else {
+      setAddKidMessage({ type: 'error', text: result.error || 'Failed to add kid' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#f0f7f7]">
       {/* Header */}
@@ -276,13 +305,98 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
         {activeTab === 'search' && (
           <div className="space-y-6">
             <div className="robo-card p-6">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for a camper by name..."
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#00adb3] focus:outline-none text-[#003439]"
-              />
+              <div className="flex gap-4 mb-4">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for a camper by name..."
+                  className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#00adb3] focus:outline-none text-[#003439]"
+                />
+                <button
+                  onClick={() => setShowAddKid(!showAddKid)}
+                  className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                    showAddKid
+                      ? 'bg-gray-200 text-gray-600'
+                      : 'robo-btn'
+                  }`}
+                >
+                  {showAddKid ? 'Cancel' : '+ Add Kid'}
+                </button>
+              </div>
+
+              {/* Add Kid Form */}
+              {showAddKid && (
+                <form onSubmit={handleAddKid} className="border-t border-gray-200 pt-4 mt-4">
+                  <h3 className="font-semibold text-[#003439] mb-4">Add New Camper</h3>
+                  {addKidMessage && (
+                    <div className={`mb-4 px-4 py-3 rounded-xl text-sm ${
+                      addKidMessage.type === 'success'
+                        ? 'bg-green-50 border border-green-200 text-green-700'
+                        : 'bg-red-50 border border-red-200 text-red-600'
+                    }`}>
+                      {addKidMessage.text}
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-[#003439] mb-1">Child Name *</label>
+                      <input
+                        type="text"
+                        value={newKid.name}
+                        onChange={(e) => setNewKid({ ...newKid, name: e.target.value })}
+                        placeholder="Enter child's name"
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#00adb3] focus:outline-none text-[#003439]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#003439] mb-1">Parent Name</label>
+                      <input
+                        type="text"
+                        value={newKid.parentName}
+                        onChange={(e) => setNewKid({ ...newKid, parentName: e.target.value })}
+                        placeholder="Enter parent's name"
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#00adb3] focus:outline-none text-[#003439]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#003439] mb-1">Age *</label>
+                      <input
+                        type="number"
+                        min="4"
+                        max="16"
+                        value={newKid.age}
+                        onChange={(e) => setNewKid({ ...newKid, age: e.target.value })}
+                        placeholder="Enter age"
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#00adb3] focus:outline-none text-[#003439]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-[#003439] mb-1">Allergies</label>
+                      <input
+                        type="text"
+                        value={newKid.allergies}
+                        onChange={(e) => setNewKid({ ...newKid, allergies: e.target.value })}
+                        placeholder="Enter any allergies"
+                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#00adb3] focus:outline-none text-[#003439]"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="submit"
+                      className="robo-btn px-6 py-2 rounded-xl font-semibold"
+                    >
+                      Add Camper (Auto-assign Group)
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#05575c]/60 mt-2">
+                    The camper will be automatically assigned to the best group based on age and group sizes.
+                  </p>
+                </form>
+              )}
             </div>
 
             {selectedKid && (
