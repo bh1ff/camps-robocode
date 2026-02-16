@@ -22,14 +22,14 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    const campsWithStats = camps.map(camp => ({
+    const campsWithStats = camps.map((camp: { id: string; name: string; description: string | null; startDate: Date; endDate: Date; _count: { groups: number }; groups: { _count: { kids: number } }[]; createdAt: Date }) => ({
       id: camp.id,
       name: camp.name,
       description: camp.description,
       startDate: camp.startDate,
       endDate: camp.endDate,
       groupCount: camp._count.groups,
-      kidCount: camp.groups.reduce((sum, g) => sum + g._count.kids, 0),
+      kidCount: camp.groups.reduce((sum: number, g: { _count: { kids: number } }) => sum + g._count.kids, 0),
       createdAt: camp.createdAt,
     }));
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     ];
 
     await prisma.session.createMany({
-      data: sessions.map(s => ({ ...s, campId: camp.id })),
+      data: sessions.map((s: { name: string; time: string; order: number }) => ({ ...s, campId: camp.id })),
     });
 
     // Create default areas
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     ];
 
     await prisma.area.createMany({
-      data: areas.map(a => ({ ...a, campId: camp.id })),
+      data: areas.map((a: { name: string; type: string }) => ({ ...a, campId: camp.id })),
     });
 
     return NextResponse.json({ success: true, camp });

@@ -62,14 +62,14 @@ export async function GET(
     for (const group of camp.groups) {
       groups[group.name] = {
         ageRange: group.ageRange,
-        kids: group.kids.map(kid => ({
+        kids: group.kids.map((kid: { id: string; name: string; age: number; allergies: string | null; checkedIn: boolean; checkedOut: boolean; attendances: { session: { order: number } }[] }) => ({
           id: kid.id,
           name: kid.name,
           age: kid.age,
           allergies: kid.allergies || '',
           checkedIn: kid.checkedIn,
           checkedOut: kid.checkedOut,
-          attended: kid.attendances.map(a => `session-${a.session.order}`),
+          attended: kid.attendances.map((a: { session: { order: number } }) => `session-${a.session.order}`),
         })),
       };
     }
@@ -80,18 +80,18 @@ export async function GET(
       const groupSlots = scheduleSlots
         .filter(s => s.groupId === group.id)
         .sort((a, b) => a.session.order - b.session.order);
-      rotation[group.name] = groupSlots.map(s => s.area.id);
+      rotation[group.name] = groupSlots.map((s: { area: { id: string } }) => s.area.id);
     }
 
     const data = {
       groups,
       schedule: {
-        sessions: camp.sessions.map(s => ({
+        sessions: camp.sessions.map((s: { id: string; name: string; time: string }) => ({
           id: s.id,
           name: s.name,
           time: s.time,
         })),
-        areas: camp.areas.map(a => ({
+        areas: camp.areas.map((a: { id: string; name: string; type: string }) => ({
           id: a.id,
           name: a.name,
           type: a.type,

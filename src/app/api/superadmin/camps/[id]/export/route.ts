@@ -54,8 +54,8 @@ export async function GET(
 
       for (const group of camp.groups) {
         for (const kid of group.kids) {
-          const attendances = camp.sessions.map(session => {
-            const att = kid.attendances.find(a => a.sessionId === session.id);
+          const attendances = camp.sessions.map((session: { id: string }) => {
+            const att = kid.attendances.find((a: { sessionId: string }) => a.sessionId === session.id);
             return att ? 'Yes' : 'No';
           });
 
@@ -88,31 +88,31 @@ export async function GET(
         endDate: camp.endDate,
         lunchTime: camp.lunchTime,
       },
-      sessions: camp.sessions.map(s => ({
+      sessions: camp.sessions.map((s: { name: string; time: string; order: number }) => ({
         name: s.name,
         time: s.time,
         order: s.order,
       })),
-      areas: camp.areas.map(a => ({
+      areas: camp.areas.map((a: { name: string; type: string }) => ({
         name: a.name,
         type: a.type,
       })),
-      groups: camp.groups.map(g => ({
+      groups: camp.groups.map((g: { name: string; ageRange: string; kids: { name: string; age: number; allergies: string | null; checkedIn: boolean; checkedOut: boolean; attendances: { session: { name: string }; attended: boolean }[] }[] }) => ({
         name: g.name,
         ageRange: g.ageRange,
-        kids: g.kids.map(k => ({
+        kids: g.kids.map((k: { name: string; age: number; allergies: string | null; checkedIn: boolean; checkedOut: boolean; attendances: { session: { name: string }; attended: boolean }[] }) => ({
           name: k.name,
           age: k.age,
           allergies: k.allergies,
           checkedIn: k.checkedIn,
           checkedOut: k.checkedOut,
-          attendance: k.attendances.map(a => ({
+          attendance: k.attendances.map((a: { session: { name: string }; attended: boolean }) => ({
             session: a.session.name,
             attended: a.attended,
           })),
         })),
       })),
-      schedule: scheduleSlots.map(s => ({
+      schedule: scheduleSlots.map((s: { group: { name: string }; session: { name: string }; area: { name: string } }) => ({
         group: s.group.name,
         session: s.session.name,
         area: s.area.name,
