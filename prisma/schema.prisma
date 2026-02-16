@@ -85,16 +85,15 @@ model ScheduleSlot {
 
 // Kid - campers
 model Kid {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   name       String
   parentName String?
   age        Int
   allergies  String?
-  checkedIn  Boolean  @default(false)
-  checkedOut Boolean  @default(false)
+  checkedIn  Boolean @default(false)
+  checkedOut Boolean @default(false)
   groupId    String
-  group      Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
+  group      Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
   attendances Attendance[]
 }
