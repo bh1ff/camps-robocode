@@ -8,6 +8,8 @@ interface Kid {
   name: string;
   age: number;
   allergies: string;
+  hasSEND: boolean;
+  hasEHCP: boolean;
   checkedIn: boolean;
   checkedOut: boolean;
   attended: string[];
@@ -15,6 +17,7 @@ interface Kid {
 
 interface Group {
   ageRange: string;
+  color: string;
   kids: Kid[];
 }
 

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
-// Add a new kid to the camp with auto-sorting into best group
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,68 +13,58 @@ export async function POST(
       return NextResponse.json({ error: 'Name and age are required' }, { status: 400 });
     }
 
-    // Get all groups with their kids for this camp
     const groups = await prisma.group.findMany({
       where: { campId },
-      include: {
-        kids: true,
-      },
-      orderBy: { name: 'asc' },
+      include: { children: true },
     });
 
     if (groups.length === 0) {
       return NextResponse.json({ error: 'No groups exist for this camp' }, { status: 400 });
     }
 
-    // Find the best group for this kid based on:
-    // 1. Age compatibility (prefer groups with similar ages)
-    // 2. Group size (prefer smaller groups to balance)
-    type GroupScore = { group: typeof groups[0]; score: number; avgAge: number };
+    const nameParts = name.trim().split(/\s+/);
+    const firstName = nameParts[0] || name;
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    type GroupScore = { group: typeof groups[0]; score: number };
 
     const groupScores: GroupScore[] = groups.map((group) => {
-      const kids = group.kids;
+      const kids = group.children;
       const avgAge = kids.length > 0
         ? kids.reduce((sum, k) => sum + k.age, 0) / kids.length
-        : age; // If empty, assume same age
+        : age;
 
-      // Parse age range
       const [minAge, maxAge] = group.ageRange.includes('-')
         ? group.ageRange.split('-').map(Number)
         : [Number(group.ageRange), Number(group.ageRange)];
 
-      // Score based on age fit (lower is better)
       let ageScore = 0;
       if (age < minAge) ageScore = (minAge - age) * 10;
       else if (age > maxAge) ageScore = (age - maxAge) * 10;
-      else ageScore = Math.abs(age - avgAge); // Within range, prefer closer to average
+      else ageScore = Math.abs(age - avgAge);
 
-      // Score based on group size (prefer smaller groups)
       const sizeScore = kids.length;
-
-      // Combined score (lower is better)
       const score = ageScore * 2 + sizeScore;
 
-      return { group, score, avgAge };
+      return { group, score };
     });
 
-    // Sort by score (lower is better)
     groupScores.sort((a, b) => a.score - b.score);
     const bestGroup = groupScores[0].group;
 
-    // Create the kid in the best group
-    const kid = await prisma.kid.create({
+    const child = await prisma.child.create({
       data: {
-        name,
-        parentName: parentName || null,
+        firstName,
+        lastName,
         age: Number(age),
-        allergies: allergies || null,
+        hasAllergies: !!allergies,
+        allergyDetails: allergies || null,
         groupId: bestGroup.id,
       },
     });
 
-    // Update group age range if needed
-    const allKidsInGroup = [...bestGroup.kids, { age: Number(age) }];
-    const ages = allKidsInGroup.map(k => k.age);
+    const allChildrenInGroup = [...bestGroup.children, { age: Number(age) }];
+    const ages = allChildrenInGroup.map(k => k.age);
     const newMinAge = Math.min(...ages);
     const newMaxAge = Math.max(...ages);
     const newAgeRange = newMinAge === newMaxAge ? `${newMinAge}` : `${newMinAge}-${newMaxAge}`;
@@ -89,9 +78,14 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      kid,
+      kid: {
+        id: child.id,
+        name: `${child.firstName} ${child.lastName}`,
+        age: child.age,
+        allergies: child.allergyDetails || '',
+      },
       assignedGroup: bestGroup.name,
-      message: `${name} added to Group ${bestGroup.name}`,
+      message: `${firstName} added to Group ${bestGroup.name}`,
     });
   } catch (error) {
     console.error('Add kid error:', error);

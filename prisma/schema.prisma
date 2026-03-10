@@ -7,7 +7,6 @@ datasource db {
   provider = "sqlite"
 }
 
-// Superadmin - manages all camps
 model SuperAdmin {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -15,36 +14,88 @@ model SuperAdmin {
   createdAt DateTime @default(now())
 }
 
-// Camp - each camp is a separate event
+model Location {
+  id             String   @id @default(cuid())
+  name           String
+  address        String   @default("")
+  region         String   // "solihull" | "birmingham"
+  capacityPerDay Int
+  hafSeatsTotal  Int
+  allowsPaid     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  camps Camp[]
+}
+
 model Camp {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  startDate   DateTime
-  endDate     DateTime
-  adminPassword   String  @default("admin2026")
-  teacherPassword String  @default("teacher2026")
-  lunchTime   String   @default("11:45-12:15")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  startDate       DateTime
+  endDate         DateTime
+  adminPassword   String   @default("admin2026")
+  teacherPassword String   @default("teacher2026")
+  lunchTime       String   @default("11:45-12:15")
+  locationId      String?
+  location        Location? @relation(fields: [locationId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   groups   Group[]
   areas    Area[]
   sessions Session[]
+  campDays CampDay[]
+  bookings Booking[]
 }
 
-// Area - activity areas (Robotics A, Game Dev, etc.)
+model CampDay {
+  id         String   @id @default(cuid())
+  date       DateTime
+  dayLabel   String
+  weekNumber Int
+  campId     String
+  camp       Camp     @relation(fields: [campId], references: [id], onDelete: Cascade)
+
+  childDays ChildDayBooking[]
+}
+
+model Booking {
+  id                  String   @id @default(cuid())
+  type                String   // "haf" | "paid"
+  status              String   @default("pending")
+
+  parentFirstName     String
+  parentLastName      String
+  parentEmail         String
+  parentPhone         String
+  address             String
+  postcode            String
+
+  hafCode             String?
+
+  totalAmount         Float    @default(0)
+  stripeSessionId     String?
+  stripePaymentStatus String?
+
+  campId              String
+  camp                Camp     @relation(fields: [campId], references: [id], onDelete: Cascade)
+
+  children            Child[]
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
 model Area {
   id     String @id @default(cuid())
   name   String
-  type   String // robotics, gamedev, 3dprinting, game
+  type   String
   campId String
   camp   Camp   @relation(fields: [campId], references: [id], onDelete: Cascade)
 
   scheduleSlots ScheduleSlot[]
 }
 
-// Session - time slots (Session 1: 10:15-11:00, etc.)
 model Session {
   id     String @id @default(cuid())
   name   String
@@ -57,21 +108,20 @@ model Session {
   attendances   Attendance[]
 }
 
-// Group - kid groups (A, B, C, etc.)
 model Group {
   id       String @id @default(cuid())
   name     String
+  color    String @default("blue")
   ageRange String
   campId   String
   camp     Camp   @relation(fields: [campId], references: [id], onDelete: Cascade)
 
-  kids          Kid[]
+  children      Child[]
   scheduleSlots ScheduleSlot[]
 }
 
-// ScheduleSlot - which group is in which area during which session
 model ScheduleSlot {
-  id        String  @id @default(cuid())
+  id        String @id @default(cuid())
   groupId   String
   sessionId String
   areaId    String
@@ -83,30 +133,54 @@ model ScheduleSlot {
   @@unique([groupId, sessionId])
 }
 
-// Kid - campers
-model Kid {
-  id         String  @id @default(cuid())
-  name       String
-  parentName String?
-  age        Int
-  allergies  String?
-  checkedIn  Boolean @default(false)
-  checkedOut Boolean @default(false)
-  groupId    String
-  group      Group   @relation(fields: [groupId], references: [id], onDelete: Cascade)
+model Child {
+  id              String    @id @default(cuid())
+  firstName       String
+  lastName        String
+  dateOfBirth     DateTime?
+  age             Int
 
-  attendances Attendance[]
+  schoolName      String?
+  schoolYear      String?
+
+  hasSEND         Boolean   @default(false)
+  hasEHCP         Boolean   @default(false)
+  ehcpDetails     String?
+  hasAllergies    Boolean   @default(false)
+  allergyDetails  String?
+  photoPermission Boolean   @default(false)
+
+  bookingId       String?
+  booking         Booking?  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  groupId         String?
+  group           Group?    @relation(fields: [groupId], references: [id])
+
+  dayBookings     ChildDayBooking[]
+  attendances     Attendance[]
 }
 
-// Attendance - tracks which kids attended which sessions
+model ChildDayBooking {
+  id         String  @id @default(cuid())
+  childId    String
+  campDayId  String
+  checkedIn  Boolean @default(false)
+  checkedOut Boolean @default(false)
+
+  child   Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
+  campDay CampDay @relation(fields: [campDayId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, campDayId])
+}
+
 model Attendance {
   id        String  @id @default(cuid())
-  kidId     String
+  childId   String
   sessionId String
   attended  Boolean @default(true)
 
-  kid     Kid     @relation(fields: [kidId], references: [id], onDelete: Cascade)
+  child   Child   @relation(fields: [childId], references: [id], onDelete: Cascade)
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-  @@unique([kidId, sessionId])
+  @@unique([childId, sessionId])
 }

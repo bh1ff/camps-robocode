@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
-// Get single camp details
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -12,9 +11,10 @@ export async function GET(
     const camp = await prisma.camp.findUnique({
       where: { id },
       include: {
+        location: true,
         groups: {
           include: {
-            kids: {
+            children: {
               include: {
                 attendances: true,
               },
@@ -25,6 +25,9 @@ export async function GET(
         sessions: {
           orderBy: { order: 'asc' },
         },
+        campDays: {
+          orderBy: { date: 'asc' },
+        },
       },
     });
 
@@ -32,11 +35,8 @@ export async function GET(
       return NextResponse.json({ error: 'Camp not found' }, { status: 404 });
     }
 
-    // Get schedule slots
     const scheduleSlots = await prisma.scheduleSlot.findMany({
-      where: {
-        group: { campId: id },
-      },
+      where: { group: { campId: id } },
       include: {
         group: true,
         session: true,
@@ -51,7 +51,6 @@ export async function GET(
   }
 }
 
-// Update camp
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -80,18 +79,13 @@ export async function PUT(
   }
 }
 
-// Delete camp
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-
-    await prisma.camp.delete({
-      where: { id },
-    });
-
+    await prisma.camp.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Delete camp error:', error);

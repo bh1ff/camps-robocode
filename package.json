@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
+    "@hookform/resolvers": "^5.2.2",
     "@libsql/client": "^0.17.0",
     "@prisma/adapter-libsql": "^7.4.0",
     "@prisma/client": "^7.4.0",
+    "@stripe/stripe-js": "^8.9.0",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
     "csv-parse": "^6.1.0",
@@ -23,7 +25,10 @@
     "prisma": "^7.4.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "tsx": "^4.21.0"
+    "react-hook-form": "^7.71.2",
+    "stripe": "^20.4.1",
+    "tsx": "^4.21.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

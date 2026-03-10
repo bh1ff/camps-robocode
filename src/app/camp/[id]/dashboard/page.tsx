@@ -9,6 +9,8 @@ interface Kid {
   name: string;
   age: number;
   allergies: string;
+  hasSEND: boolean;
+  hasEHCP: boolean;
   checkedIn: boolean;
   checkedOut: boolean;
   attended: string[];
@@ -16,7 +18,23 @@ interface Kid {
 
 interface Group {
   ageRange: string;
+  color: string;
   kids: Kid[];
+}
+
+const GROUP_COLORS: Record<string, { bg: string; text: string; ring: string }> = {
+  red: { bg: 'bg-red-100', text: 'text-red-700', ring: 'ring-red-400' },
+  blue: { bg: 'bg-blue-100', text: 'text-blue-700', ring: 'ring-blue-400' },
+  green: { bg: 'bg-green-100', text: 'text-green-700', ring: 'ring-green-400' },
+  yellow: { bg: 'bg-yellow-100', text: 'text-yellow-700', ring: 'ring-yellow-400' },
+  purple: { bg: 'bg-purple-100', text: 'text-purple-700', ring: 'ring-purple-400' },
+  orange: { bg: 'bg-orange-100', text: 'text-orange-700', ring: 'ring-orange-400' },
+  pink: { bg: 'bg-pink-100', text: 'text-pink-700', ring: 'ring-pink-400' },
+  cyan: { bg: 'bg-cyan-100', text: 'text-cyan-700', ring: 'ring-cyan-400' },
+};
+
+function getGroupColor(color: string) {
+  return GROUP_COLORS[color] || GROUP_COLORS.blue;
 }
 
 interface Area {
@@ -316,6 +334,7 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(data.groups).map(([groupId, group]) => {
                   const groupCheckedIn = group.kids.filter(k => k.checkedIn).length;
+                  const gc = getGroupColor(group.color);
                   return (
                     <button
                       key={groupId}
@@ -323,7 +342,10 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                       className="p-4 bg-[#f0f7f7] rounded-xl text-left hover:shadow-md hover:bg-[#00adb3]/10 transition-all"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="font-semibold text-[#003439]">Group {groupId}</h3>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-4 h-4 rounded-full ${gc.bg} ring-2 ${gc.ring}`} />
+                          <h3 className="font-semibold text-[#003439]">Group {groupId}</h3>
+                        </div>
                         <span className="robo-badge">{group.kids.length}</span>
                       </div>
                       <p className="text-xs text-[#05575c]/70 mb-2">Ages {group.ageRange}</p>
@@ -490,6 +512,17 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                     <h3 className="text-2xl font-heading text-[#003439]">{selectedKid.kid.name}</h3>
                     <p className="text-[#05575c]/70">Age {selectedKid.kid.age} | Group {selectedKid.groupId}</p>
 
+                    {(selectedKid.kid.hasSEND || selectedKid.kid.hasEHCP) && (
+                      <div className="flex gap-2 mt-2">
+                        {selectedKid.kid.hasSEND && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">SEND</span>
+                        )}
+                        {selectedKid.kid.hasEHCP && (
+                          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700">EHCP</span>
+                        )}
+                      </div>
+                    )}
+
                     <div className="mt-4 space-y-4">
                       <div>
                         <label className="block text-sm font-semibold text-[#003439] mb-2">Allergies</label>
@@ -651,9 +684,12 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                         className={`robo-card p-4 ${snapshot.isDraggingOver ? 'ring-2 ring-[#00adb3]' : ''}`}
                       >
                         <div className="flex items-center justify-between mb-3">
-                          <div>
-                            <h3 className="font-heading text-lg text-[#003439]">Group {groupId}</h3>
-                            <p className="text-xs text-[#05575c]/70">Ages {group.ageRange}</p>
+                          <div className="flex items-center gap-2">
+                            <span className={`w-4 h-4 rounded-full ${getGroupColor(group.color).bg} ring-2 ${getGroupColor(group.color).ring}`} />
+                            <div>
+                              <h3 className="font-heading text-lg text-[#003439]">Group {groupId}</h3>
+                              <p className="text-xs text-[#05575c]/70">Ages {group.ageRange}</p>
+                            </div>
                           </div>
                           <span className="robo-badge">{group.kids.length}</span>
                         </div>

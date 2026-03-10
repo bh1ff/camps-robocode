@@ -2,7 +2,6 @@ import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 import bcrypt from 'bcryptjs';
-import kidsData from '../src/data/kids.json';
 
 const url = process.env.TURSO_DATABASE_URL || 'file:./dev.db';
 const authToken = process.env.TURSO_AUTH_TOKEN;
@@ -12,7 +11,6 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   console.log('Seeding database...');
 
-  // Create superadmin
   const hashedPassword = await bcrypt.hash('admin', 10);
   await prisma.superAdmin.upsert({
     where: { email: 'admin@robocode.uk' },
@@ -24,32 +22,138 @@ async function main() {
   });
   console.log('Created superadmin: admin@robocode.uk / admin');
 
-  // Create today's camp
-  const today = new Date();
-  const camp = await prisma.camp.create({
+  // --- Locations ---
+  const solihull = await prisma.location.create({
     data: {
-      name: 'HAF Tuesday 17th',
-      description: 'Holiday Activities and Food Programme',
-      startDate: today,
-      endDate: today,
-      adminPassword: 'robocamp2026',
-      teacherPassword: 'teacher2026',
-      lunchTime: '11:45-12:15',
+      name: 'Robocode Centre (Solihull)',
+      address: 'Solihull, West Midlands',
+      region: 'solihull',
+      capacityPerDay: 70,
+      hafSeatsTotal: 200,
+      allowsPaid: true,
     },
   });
-  console.log(`Created camp: ${camp.name}`);
 
-  // Create sessions
-  const sessions = await Promise.all([
-    prisma.session.create({ data: { name: 'Session 1', time: '10:15-11:00', order: 1, campId: camp.id } }),
-    prisma.session.create({ data: { name: 'Session 2', time: '11:00-11:45', order: 2, campId: camp.id } }),
-    prisma.session.create({ data: { name: 'Session 3', time: '12:15-13:00', order: 3, campId: camp.id } }),
-    prisma.session.create({ data: { name: 'Session 4', time: '13:00-13:45', order: 4, campId: camp.id } }),
-  ]);
-  console.log('Created 4 sessions');
+  const kingshurst = await prisma.location.create({
+    data: {
+      name: 'Kingshurst (Tudor Grange Academy)',
+      address: 'Tudor Grange Academy, Kingshurst',
+      region: 'solihull',
+      capacityPerDay: 38,
+      hafSeatsTotal: 150,
+      allowsPaid: false,
+    },
+  });
 
-  // Create areas
-  const areasData = [
+  const bcu = await prisma.location.create({
+    data: {
+      name: 'Birmingham City University (Curzon Building)',
+      address: 'Curzon Building, Birmingham City University',
+      region: 'birmingham',
+      capacityPerDay: 45,
+      hafSeatsTotal: 320,
+      allowsPaid: false,
+    },
+  });
+
+  console.log('Created 3 locations');
+
+  // --- Camps (one per location) ---
+  const solihullCamp = await prisma.camp.create({
+    data: {
+      name: 'Easter 2026 - Solihull',
+      description: 'Robocode Holiday Tech Camp at Solihull Centre (HAF + Paid)',
+      startDate: new Date('2026-03-30'),
+      endDate: new Date('2026-04-09'),
+      adminPassword: 'robocamp2026',
+      teacherPassword: 'teacher2026',
+      lunchTime: '12:00-12:30',
+      locationId: solihull.id,
+    },
+  });
+
+  const kingshurstCamp = await prisma.camp.create({
+    data: {
+      name: 'Easter 2026 - Kingshurst',
+      description: 'Robocode Holiday Tech Camp at Tudor Grange Academy (HAF)',
+      startDate: new Date('2026-03-30'),
+      endDate: new Date('2026-04-02'),
+      adminPassword: 'robocamp2026',
+      teacherPassword: 'teacher2026',
+      lunchTime: '12:30-13:00',
+      locationId: kingshurst.id,
+    },
+  });
+
+  const bcuCamp = await prisma.camp.create({
+    data: {
+      name: 'Easter 2026 - BCU',
+      description: 'Robocode Holiday Tech Camp at Birmingham City University (HAF)',
+      startDate: new Date('2026-03-30'),
+      endDate: new Date('2026-04-09'),
+      adminPassword: 'robocamp2026',
+      teacherPassword: 'teacher2026',
+      lunchTime: '13:30-14:00',
+      locationId: bcu.id,
+    },
+  });
+
+  console.log('Created 3 camps');
+
+  // --- Camp Days ---
+  // Solihull: 8 days (Mon-Thu Week 1 + Mon-Thu Week 2)
+  const solihullDays = [
+    { date: '2026-03-30', dayLabel: 'Monday 30th March',    weekNumber: 1 },
+    { date: '2026-03-31', dayLabel: 'Tuesday 31st March',   weekNumber: 1 },
+    { date: '2026-04-01', dayLabel: 'Wednesday 1st April',  weekNumber: 1 },
+    { date: '2026-04-02', dayLabel: 'Thursday 2nd April',   weekNumber: 1 },
+    { date: '2026-04-06', dayLabel: 'Monday 6th April',     weekNumber: 2 },
+    { date: '2026-04-07', dayLabel: 'Tuesday 7th April',    weekNumber: 2 },
+    { date: '2026-04-08', dayLabel: 'Wednesday 8th April',  weekNumber: 2 },
+    { date: '2026-04-09', dayLabel: 'Thursday 9th April',   weekNumber: 2 },
+  ];
+
+  for (const day of solihullDays) {
+    await prisma.campDay.create({
+      data: { date: new Date(day.date), dayLabel: day.dayLabel, weekNumber: day.weekNumber, campId: solihullCamp.id },
+    });
+  }
+
+  // Kingshurst: 4 days (Mon-Thu Week 1 only)
+  const kingshurstDays = solihullDays.filter(d => d.weekNumber === 1);
+  for (const day of kingshurstDays) {
+    await prisma.campDay.create({
+      data: { date: new Date(day.date), dayLabel: day.dayLabel, weekNumber: day.weekNumber, campId: kingshurstCamp.id },
+    });
+  }
+
+  // BCU: 7 days (Mon-Thu Week 1 + Tue-Thu Week 2 — Easter Monday excluded)
+  const bcuDays = solihullDays.filter(d => !(d.date === '2026-04-06'));
+  for (const day of bcuDays) {
+    await prisma.campDay.create({
+      data: { date: new Date(day.date), dayLabel: day.dayLabel, weekNumber: day.weekNumber, campId: bcuCamp.id },
+    });
+  }
+
+  console.log('Created camp days (Solihull: 8, Kingshurst: 4, BCU: 7)');
+
+  // --- Default sessions for each camp ---
+  const sessionDefs = [
+    { name: 'Session 1', time: '10:15-11:00', order: 1 },
+    { name: 'Session 2', time: '11:00-11:45', order: 2 },
+    { name: 'Session 3', time: '12:15-13:00', order: 3 },
+    { name: 'Session 4', time: '13:00-13:45', order: 4 },
+  ];
+
+  for (const camp of [solihullCamp, kingshurstCamp, bcuCamp]) {
+    await prisma.session.createMany({
+      data: sessionDefs.map(s => ({ ...s, campId: camp.id })),
+    });
+  }
+  console.log('Created sessions for all camps');
+
+  // --- Default areas for Solihull ---
+  const solihullAreas = [
     { name: 'Robotics A', type: 'robotics' },
     { name: 'Robotics B', type: 'robotics' },
     { name: 'Board Room (3DPA)', type: '3dprinting' },
@@ -58,77 +162,27 @@ async function main() {
     { name: 'Game Dev B', type: 'gamedev' },
     { name: 'Game Area', type: 'game' },
   ];
+  await prisma.area.createMany({
+    data: solihullAreas.map(a => ({ ...a, campId: solihullCamp.id })),
+  });
 
-  const areas = await Promise.all(
-    areasData.map(a => prisma.area.create({ data: { ...a, campId: camp.id } }))
-  );
-  console.log('Created 7 areas');
-
-  // Create groups and kids from existing data
-  const groupEntries = Object.entries(kidsData.groups) as [string, { ageRange: string; kids: any[] }][];
-
-  for (const [groupName, groupData] of groupEntries) {
-    const group = await prisma.group.create({
-      data: {
-        name: groupName,
-        ageRange: groupData.ageRange,
-        campId: camp.id,
-      },
+  // Simpler area setup for other locations
+  const simpleAreas = [
+    { name: 'Activity Room 1', type: 'robotics' },
+    { name: 'Activity Room 2', type: 'gamedev' },
+    { name: 'Activity Room 3', type: '3dprinting' },
+    { name: 'Activity Room 4', type: 'game' },
+  ];
+  for (const camp of [kingshurstCamp, bcuCamp]) {
+    await prisma.area.createMany({
+      data: simpleAreas.map(a => ({ ...a, campId: camp.id })),
     });
-
-    // Create kids
-    for (const kid of groupData.kids) {
-      await prisma.kid.create({
-        data: {
-          name: kid.name,
-          age: kid.age,
-          allergies: kid.allergies || null,
-          groupId: group.id,
-        },
-      });
-    }
-    console.log(`Created Group ${groupName} with ${groupData.kids.length} kids`);
   }
+  console.log('Created areas for all camps');
 
-  // Create rotation schedule - each group does each SUBJECT TYPE once per day
-  // Areas: 0=Robotics A, 1=Robotics B, 2=3DPA, 3=3DPB, 4=GameDev A, 5=GameDev B, 6=Game Area
-  // Subject types: robotics(0,1), 3dprinting(2,3), gamedev(4,5), game(6)
-  // Groups A,C,E,G use "A" variant rooms; Groups B,D,F,H use "B" variant rooms
-  const rotation: Record<string, number[]> = {
-    'A': [0, 2, 4, 6], // Robotics A → 3DPA → GameDev A → Game Area
-    'B': [1, 3, 5, 6], // Robotics B → 3DPB → GameDev B → Game Area
-    'C': [2, 4, 6, 0], // 3DPA → GameDev A → Game Area → Robotics A
-    'D': [3, 5, 6, 1], // 3DPB → GameDev B → Game Area → Robotics B
-    'E': [4, 6, 0, 2], // GameDev A → Game Area → Robotics A → 3DPA
-    'F': [5, 6, 1, 3], // GameDev B → Game Area → Robotics B → 3DPB
-    'G': [6, 0, 2, 4], // Game Area → Robotics A → 3DPA → GameDev A
-    'H': [6, 1, 3, 5], // Game Area → Robotics B → 3DPB → GameDev B
-  };
-
-  const groups = await prisma.group.findMany({ where: { campId: camp.id } });
-
-  for (const group of groups) {
-    const areaIndices = rotation[group.name] || [0, 1, 2, 3];
-    for (let sessionIdx = 0; sessionIdx < sessions.length; sessionIdx++) {
-      const areaIdx = areaIndices[sessionIdx] % areas.length;
-      await prisma.scheduleSlot.create({
-        data: {
-          groupId: group.id,
-          sessionId: sessions[sessionIdx].id,
-          areaId: areas[areaIdx].id,
-        },
-      });
-    }
-  }
-  console.log('Created rotation schedule');
-
-  console.log('\n✅ Database seeded successfully!');
-  console.log('\nSuperadmin login:');
-  console.log('  Email: admin@robocode.uk');
-  console.log('  Password: admin');
-  console.log('\nCamp passwords:');
-  console.log('  Admin: robocamp2026');
-  console.log('  Teacher: teacher2026');
+  console.log('\nDatabase seeded successfully!');
+  console.log('\nSuperadmin: admin@robocode.uk / admin');
+  console.log('Camp passwords: admin=robocamp2026, teacher=teacher2026');
 }
 
 main()

@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
-// Get all camps
 export async function GET() {
   try {
     const camps = await prisma.camp.findMany({
       include: {
+        location: true,
         _count: {
-          select: {
-            groups: true,
-          },
+          select: { groups: true },
         },
         groups: {
           include: {
             _count: {
-              select: { kids: true },
+              select: { children: true },
             },
           },
         },
@@ -22,14 +20,15 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     });
 
-    const campsWithStats = camps.map((camp: { id: string; name: string; description: string | null; startDate: Date; endDate: Date; _count: { groups: number }; groups: { _count: { kids: number } }[]; createdAt: Date }) => ({
+    const campsWithStats = camps.map((camp) => ({
       id: camp.id,
       name: camp.name,
       description: camp.description,
       startDate: camp.startDate,
       endDate: camp.endDate,
+      location: camp.location?.name || null,
       groupCount: camp._count.groups,
-      kidCount: camp.groups.reduce((sum: number, g: { _count: { kids: number } }) => sum + g._count.kids, 0),
+      kidCount: camp.groups.reduce((sum, g) => sum + g._count.children, 0),
       createdAt: camp.createdAt,
     }));
 
@@ -40,7 +39,6 @@ export async function GET() {
   }
 }
 
-// Create a new camp
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
@@ -54,10 +52,10 @@ export async function POST(request: NextRequest) {
         adminPassword: data.adminPassword || 'admin2026',
         teacherPassword: data.teacherPassword || 'teacher2026',
         lunchTime: data.lunchTime || '11:45-12:15',
+        locationId: data.locationId || null,
       },
     });
 
-    // Create default sessions
     const sessions = [
       { name: 'Session 1', time: '10:15-11:00', order: 1 },
       { name: 'Session 2', time: '11:00-11:45', order: 2 },
@@ -66,10 +64,9 @@ export async function POST(request: NextRequest) {
     ];
 
     await prisma.session.createMany({
-      data: sessions.map((s: { name: string; time: string; order: number }) => ({ ...s, campId: camp.id })),
+      data: sessions.map((s) => ({ ...s, campId: camp.id })),
     });
 
-    // Create default areas
     const areas = [
       { name: 'Robotics A', type: 'robotics' },
       { name: 'Robotics B', type: 'robotics' },
@@ -81,7 +78,7 @@ export async function POST(request: NextRequest) {
     ];
 
     await prisma.area.createMany({
-      data: areas.map((a: { name: string; type: string }) => ({ ...a, campId: camp.id })),
+      data: areas.map((a) => ({ ...a, campId: camp.id })),
     });
 
     return NextResponse.json({ success: true, camp });

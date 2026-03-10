@@ -15,21 +15,17 @@ export async function GET(
       include: {
         groups: {
           include: {
-            kids: {
+            children: {
               include: {
                 attendances: {
-                  include: {
-                    session: true,
-                  },
+                  include: { session: true },
                 },
               },
             },
           },
         },
         areas: true,
-        sessions: {
-          orderBy: { order: 'asc' },
-        },
+        sessions: { orderBy: { order: 'asc' } },
       },
     });
 
@@ -37,35 +33,29 @@ export async function GET(
       return NextResponse.json({ error: 'Camp not found' }, { status: 404 });
     }
 
-    // Get schedule slots
     const scheduleSlots = await prisma.scheduleSlot.findMany({
       where: { group: { campId } },
-      include: {
-        group: true,
-        session: true,
-        area: true,
-      },
+      include: { group: true, session: true, area: true },
     });
 
     if (format === 'csv') {
-      // Generate CSV
       const rows: string[] = [];
-      rows.push('Name,Age,Group,Allergies,Checked In,Checked Out,Session 1,Session 2,Session 3,Session 4');
+      rows.push('Name,Age,Group,Allergies,SEND,EHCP,Session 1,Session 2,Session 3,Session 4');
 
       for (const group of camp.groups) {
-        for (const kid of group.kids) {
-          const attendances = camp.sessions.map((session: { id: string }) => {
-            const att = kid.attendances.find((a: { sessionId: string }) => a.sessionId === session.id);
+        for (const child of group.children) {
+          const attendances = camp.sessions.map((session) => {
+            const att = child.attendances.find((a) => a.sessionId === session.id);
             return att ? 'Yes' : 'No';
           });
 
           rows.push([
-            `"${kid.name}"`,
-            kid.age,
+            `"${child.firstName} ${child.lastName}"`,
+            child.age,
             group.name,
-            `"${kid.allergies || ''}"`,
-            kid.checkedIn ? 'Yes' : 'No',
-            kid.checkedOut ? 'Yes' : 'No',
+            `"${child.allergyDetails || ''}"`,
+            child.hasSEND ? 'Yes' : 'No',
+            child.hasEHCP ? 'Yes' : 'No',
             ...attendances,
           ].join(','));
         }
@@ -79,7 +69,6 @@ export async function GET(
       });
     }
 
-    // JSON format
     const exportData = {
       camp: {
         name: camp.name,
@@ -88,31 +77,31 @@ export async function GET(
         endDate: camp.endDate,
         lunchTime: camp.lunchTime,
       },
-      sessions: camp.sessions.map((s: { name: string; time: string; order: number }) => ({
+      sessions: camp.sessions.map((s) => ({
         name: s.name,
         time: s.time,
         order: s.order,
       })),
-      areas: camp.areas.map((a: { name: string; type: string }) => ({
+      areas: camp.areas.map((a) => ({
         name: a.name,
         type: a.type,
       })),
-      groups: camp.groups.map((g: { name: string; ageRange: string; kids: { name: string; age: number; allergies: string | null; checkedIn: boolean; checkedOut: boolean; attendances: { session: { name: string }; attended: boolean }[] }[] }) => ({
+      groups: camp.groups.map((g) => ({
         name: g.name,
         ageRange: g.ageRange,
-        kids: g.kids.map((k: { name: string; age: number; allergies: string | null; checkedIn: boolean; checkedOut: boolean; attendances: { session: { name: string }; attended: boolean }[] }) => ({
-          name: k.name,
-          age: k.age,
-          allergies: k.allergies,
-          checkedIn: k.checkedIn,
-          checkedOut: k.checkedOut,
-          attendance: k.attendances.map((a: { session: { name: string }; attended: boolean }) => ({
+        children: g.children.map((c) => ({
+          name: `${c.firstName} ${c.lastName}`,
+          age: c.age,
+          allergies: c.allergyDetails,
+          hasSEND: c.hasSEND,
+          hasEHCP: c.hasEHCP,
+          attendance: c.attendances.map((a) => ({
             session: a.session.name,
             attended: a.attended,
           })),
         })),
       })),
-      schedule: scheduleSlots.map((s: { group: { name: string }; session: { name: string }; area: { name: string } }) => ({
+      schedule: scheduleSlots.map((s) => ({
         group: s.group.name,
         session: s.session.name,
         area: s.area.name,

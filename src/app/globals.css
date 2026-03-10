@@ -153,3 +153,23 @@ h4, h5, h6, .font-subheading {
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
 }
+
+/* Infinite horizontal scroll for photo strip */
+@keyframes scroll-x {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll-x {
+  animation: scroll-x 30s linear infinite;
+  width: max-content;
+}
+
+.animate-scroll-x:hover {
+  animation-play-state: paused;
+}
+
+/* Smooth scroll for anchor links */
+html {
+  scroll-behavior: smooth;
+}

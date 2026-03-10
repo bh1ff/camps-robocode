@@ -47,5 +47,8 @@ next-env.d.ts
 dev.db
 *.db
 
+# Raw source images (optimized versions in public/camp/)
+/images/
+
 # npm cache
 .npm-cache/
