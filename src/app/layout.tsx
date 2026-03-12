@@ -1,5 +1,20 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import "./globals.css";
+
+const airForce = localFont({
+  src: "../fonts/AirForce.otf",
+  variable: "--font-display",
+  display: "swap",
+  weight: "700",
+});
+
+const myriadPro = localFont({
+  src: "../fonts/MyriadPro-Regular.otf",
+  variable: "--font-body",
+  display: "swap",
+  weight: "400",
+});
 
 export const metadata: Metadata = {
   title: "Robocode Easter Tech Camp 2026 | Ages 6–17 | Robotics, Coding & 3D Printing",
@@ -133,7 +148,7 @@ export default function RootLayout({
       <head>
         <JsonLd />
       </head>
-      <body className="antialiased">
+      <body className={`${airForce.variable} ${myriadPro.variable} antialiased`}>
         {children}
       </body>
     </html>
