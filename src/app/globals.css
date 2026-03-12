@@ -1,175 +1,182 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* Robocode Brand Colors */
-  --robo-dark: #003439;
-  --robo-medium: #05575c;
-  --robo-accent: #00adb3;
-  --robo-light: #00d4db;
-
-  --background: #f0f7f7;
-  --foreground: #003439;
+  --rc-primary: #00dcde;
+  --rc-primary-light: #83fdff;
+  --rc-primary-50: #edfffe;
+  --rc-secondary: #ff00bf;
+  --rc-secondary-light: #ff98f4;
+  --rc-tertiary: #ff9752;
+  --rc-dark: #003439;
+  --rc-dark-mid: #05575c;
+  --rc-surface: #f0f7f7;
+  --rc-card: #ffffff;
+  --rc-radius: 20px;
+  --rc-radius-sm: 12px;
+  --rc-radius-xs: 8px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-robo-dark: #003439;
-  --color-robo-medium: #05575c;
-  --color-robo-accent: #00adb3;
-  --color-robo-light: #00d4db;
+  --color-rc-dark: #003439;
+  --color-rc-mid: #05575c;
+  --color-rc-accent: #00adb3;
+  --color-rc-primary: #00dcde;
+  --color-rc-primary-light: #83fdff;
+  --color-rc-secondary: #ff00bf;
+  --color-rc-tertiary: #ff9752;
+  --color-rc-surface: #f0f7f7;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--rc-surface);
+  color: var(--rc-dark);
+  font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.625;
+  overflow-x: hidden;
 }
 
-/* Air Force style - using Orbitron as closest match */
-h1, h2, h3, .font-heading {
+/* Heading font: AIR FORCE → Orbitron */
+.font-display,
+h1, h2, h3 {
   font-family: 'Orbitron', 'Arial Black', sans-serif;
   font-weight: 700;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  line-height: 1.15;
 }
 
-/* Myriad Pro style - using Source Sans 3 */
-h4, h5, h6, .font-subheading {
+h4, h5, h6, .font-sub {
   font-family: 'Source Sans 3', -apple-system, sans-serif;
   font-weight: 600;
 }
 
-/* Robocode gradient backgrounds */
-.robo-gradient {
-  background: linear-gradient(135deg, #003439 0%, #05575c 100%);
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--rc-dark-mid); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--rc-dark); }
+
+/* Selection */
+::selection {
+  background: rgba(0, 220, 222, 0.25);
+  color: var(--rc-dark);
 }
 
-.robo-gradient-light {
-  background: linear-gradient(135deg, #05575c 0%, #00adb3 100%);
+/* ─── CARD SYSTEM ─── */
+.rc-card {
+  background: var(--rc-card);
+  border-radius: var(--rc-radius);
+  border: 1px solid rgba(0, 220, 222, 0.08);
+  transition: box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.rc-card:hover {
+  box-shadow: 0 20px 60px -15px rgba(0, 52, 57, 0.12);
 }
 
-/* Robocode button styles */
-.robo-btn {
-  background: linear-gradient(135deg, #00adb3 0%, #00d4db 100%);
-  color: white;
+.rc-card-dark {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--rc-radius);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  transition: border-color 0.5s, background 0.5s;
+}
+.rc-card-dark:hover {
+  border-color: rgba(0, 220, 222, 0.3);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ─── BUTTON SYSTEM ─── */
+.rc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   font-family: 'Source Sans 3', sans-serif;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(0, 173, 179, 0.3);
+  font-weight: 700;
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
 }
 
-.robo-btn:hover {
+.rc-btn-primary {
+  background: var(--rc-primary-light);
+  color: var(--rc-dark);
+  box-shadow: 0 0 0 0 rgba(0, 220, 222, 0);
+}
+.rc-btn-primary:hover {
+  background: var(--rc-primary);
+  box-shadow: 0 0 40px rgba(0, 220, 222, 0.35);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 173, 179, 0.4);
 }
 
-.robo-btn:active {
-  transform: translateY(0);
-}
-
-/* Card styles */
-.robo-card {
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 52, 57, 0.08);
-  border: 1px solid rgba(0, 173, 179, 0.1);
-}
-
-/* Custom scrollbar with Robocode colors */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #e8f4f4;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #05575c, #00adb3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #003439, #05575c);
-}
-
-/* Drag and drop styles */
-.drag-item {
-  transition: all 0.2s ease;
-}
-
-.drag-item:hover {
-  background: rgba(0, 173, 179, 0.1);
-}
-
-.drag-item.dragging {
-  opacity: 0.8;
-  transform: rotate(2deg);
-  box-shadow: 0 8px 25px rgba(0, 52, 57, 0.2);
-}
-
-.drop-zone {
-  transition: all 0.2s ease;
-  border: 2px dashed transparent;
-}
-
-.drop-zone.drag-over {
-  border-color: #00adb3;
-  background: rgba(0, 173, 179, 0.05);
-}
-
-/* Stat card animations */
-.stat-card {
-  transition: all 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(0, 52, 57, 0.12);
-}
-
-/* Badge styles */
-.robo-badge {
-  background: linear-gradient(135deg, #00adb3 0%, #00d4db 100%);
-  color: white;
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-}
-
-.robo-badge-outline {
+.rc-btn-secondary {
   background: transparent;
-  color: #00adb3;
-  border: 2px solid #00adb3;
-  font-family: 'Source Sans 3', sans-serif;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  color: white;
+  border: 2px solid var(--rc-secondary);
+}
+.rc-btn-secondary:hover {
+  background: rgba(255, 0, 191, 0.12);
+  box-shadow: 0 0 30px rgba(255, 0, 191, 0.2);
+  transform: translateY(-2px);
 }
 
-/* Infinite horizontal scroll for photo strip */
+.rc-btn-ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.rc-btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+}
+
+/* ─── MARQUEE ─── */
 @keyframes scroll-x {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
 .animate-scroll-x {
-  animation: scroll-x 30s linear infinite;
+  animation: scroll-x 35s linear infinite;
   width: max-content;
 }
-
 .animate-scroll-x:hover {
   animation-play-state: paused;
 }
 
-/* Smooth scroll for anchor links */
-html {
-  scroll-behavior: smooth;
+/* ─── AMBIENT GLOW ─── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.animate-glow {
+  animation: glow-pulse 4s ease-in-out infinite;
+}
+
+/* ─── GRADIENT SHIFT ─── */
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+/* ─── SECTION SPACING ─── */
+.section-pad {
+  padding-top: clamp(4rem, 8vw, 7rem);
+  padding-bottom: clamp(4rem, 8vw, 7rem);
 }
