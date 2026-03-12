@@ -73,8 +73,8 @@ function Reveal({
 const NAV_LINKS = [
   { label: 'What to Expect', href: '#activities' },
   { label: 'Locations', href: '#locations' },
-  { label: 'Reviews', href: '#reviews' },
   { label: 'Pricing', href: '#pricing' },
+  { label: 'Reviews', href: '#reviews' },
 ];
 
 const LOCATIONS = [
@@ -560,9 +560,6 @@ export default function CampsPage() {
           </div>
         </section>
 
-        {/* ───────── TESTIMONIALS ───────── */}
-        <TestimonialCarousel />
-
         {/* ───────── PRICING ───────── */}
         <section id="pricing" className="bg-white">
           <div className="max-w-3xl mx-auto px-6 py-20 md:py-28">
@@ -648,6 +645,9 @@ export default function CampsPage() {
             </Reveal>
           </div>
         </section>
+
+        {/* ───────── TESTIMONIALS ───────── */}
+        <TestimonialCarousel />
 
         {/* ───────── ABOUT BRIDGE ───────── */}
         <section className="bg-gradient-to-br from-cyan-50 via-white to-pink/5">
@@ -846,11 +846,9 @@ export default function CampsPage() {
           </div>
         </div>
 
-        <div className="border-t border-white/8 py-5 text-xs text-white/30">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-2 md:gap-6">
-            <span>© {new Date().getFullYear()} RobocodeUK Limited. Company No. 14161031. All rights reserved.</span>
-            <Link href="/superadmin" className="text-white/20 hover:text-white/50 transition-colors">Admin</Link>
-          </div>
+        <div className="border-t border-white/8 py-5 text-xs text-white/30 relative">
+          <p className="text-center">© {new Date().getFullYear()} RobocodeUK Limited. Company No. 14161031. All rights reserved.</p>
+          <Link href="/superadmin" className="absolute right-4 top-1/2 -translate-y-1/2 text-white/5 hover:text-white/30 transition-colors text-[10px]">Admin</Link>
         </div>
       </footer>
     </>
