@@ -42,9 +42,6 @@ export default function StepReview({ form, locationName, campDays, bookingType, 
           <p className="text-sm text-[#05575c]/70">{form.parentEmail}</p>
           <p className="text-sm text-[#05575c]/70">{form.parentPhone}</p>
           <p className="text-sm text-[#05575c]/70">{form.address}, {form.postcode}</p>
-          {bookingType === 'haf' && (
-            <p className="text-sm mt-1"><span className="font-medium">HAF Code:</span> {form.hafCode}</p>
-          )}
         </Section>
 
         <Section title={`${form.children.length > 1 ? 'Children' : 'Child'} (${form.children.length})`}>
@@ -56,6 +53,14 @@ export default function StepReview({ form, locationName, campDays, bookingType, 
                 <p>DOB: {child.dateOfBirth}</p>
                 <p>School: {child.schoolName || '—'}</p>
                 <p>Year: {child.schoolYear || '—'}</p>
+                {bookingType === 'haf' && child.hafCode && (
+                  <p>HAF Code: {child.hafCode}</p>
+                )}
+                {bookingType === 'haf' && (
+                  <p>FSM: {child.fsmEligible ? 'Yes' : 'No'}</p>
+                )}
+                {child.ethnicity && <p>Ethnicity: {child.ethnicity}</p>}
+                {child.gender && <p>Gender: {child.gender}</p>}
                 <p>SEND: {child.hasSEND ? 'Yes' : 'No'}</p>
                 {child.hasEHCP && <p>EHCP: Yes</p>}
                 <p>Allergies: {child.hasAllergies ? child.allergyDetails : 'None'}</p>

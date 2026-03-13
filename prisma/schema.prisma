@@ -7,22 +7,50 @@ datasource db {
   provider = "sqlite"
 }
 
-model SuperAdmin {
+model AdminUser {
   id        String   @id @default(cuid())
   email     String   @unique
+  name      String   @default("")
   password  String
+  role      String   @default("staff")
+  active    Boolean  @default(true)
   createdAt DateTime @default(now())
 }
 
+model Season {
+  id        String      @id @default(cuid())
+  title     String
+  slug      String      @unique
+  startDate DateTime
+  endDate   DateTime
+  active    Boolean     @default(true)
+  createdAt DateTime    @default(now())
+  camps     Camp[]
+  priceTiers PriceTier[]
+}
+
+model PriceTier {
+  id         String  @id @default(cuid())
+  days       Int
+  pricePence Int
+  order      Int     @default(0)
+  seasonId   String?
+  season     Season? @relation(fields: [seasonId], references: [id])
+}
+
 model Location {
-  id             String   @id @default(cuid())
-  name           String
-  address        String   @default("")
-  region         String   // "solihull" | "birmingham"
-  capacityPerDay Int
-  hafSeatsTotal  Int
-  allowsPaid     Boolean  @default(false)
-  createdAt      DateTime @default(now())
+  id                   String   @id @default(cuid())
+  name                 String
+  slug                 String   @default("")
+  address              String   @default("")
+  region               String
+  capacityPerDay       Int
+  hafSeatsTotal        Int
+  allowsPaid           Boolean  @default(false)
+  stripeSecretKey      String?
+  stripePublishableKey String?
+  stripeWebhookSecret  String?
+  createdAt            DateTime @default(now())
 
   camps Camp[]
 }
@@ -38,6 +66,8 @@ model Camp {
   lunchTime       String   @default("11:45-12:15")
   locationId      String?
   location        Location? @relation(fields: [locationId], references: [id])
+  seasonId        String?
+  season          Season?   @relation(fields: [seasonId], references: [id])
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
@@ -142,6 +172,11 @@ model Child {
 
   schoolName      String?
   schoolYear      String?
+
+  hafCode         String?
+  fsmEligible     Boolean   @default(true)
+  ethnicity       String?
+  gender          String?
 
   hasSEND         Boolean   @default(false)
   hasEHCP         Boolean   @default(false)

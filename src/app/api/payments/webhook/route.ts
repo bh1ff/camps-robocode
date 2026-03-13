@@ -10,15 +10,34 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No signature' }, { status: 400 });
   }
 
+  const globalSecret = process.env.STRIPE_WEBHOOK_SECRET || '';
+
+  const locationWebhookSecrets = await prisma.location.findMany({
+    where: { stripeWebhookSecret: { not: null } },
+    select: { stripeWebhookSecret: true, stripeSecretKey: true },
+  });
+
   let event;
+  let matchedStripeKey: string | null = null;
+
   try {
-    event = getStripe().webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET || ''
-    );
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err);
+    event = getStripe().webhooks.constructEvent(body, sig, globalSecret);
+  } catch {
+    for (const loc of locationWebhookSecrets) {
+      if (!loc.stripeWebhookSecret) continue;
+      try {
+        const stripe = getStripe(loc.stripeSecretKey);
+        event = stripe.webhooks.constructEvent(body, sig, loc.stripeWebhookSecret);
+        matchedStripeKey = loc.stripeSecretKey;
+        break;
+      } catch {
+        continue;
+      }
+    }
+  }
+
+  if (!event) {
+    console.error('Webhook signature verification failed for all keys');
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -34,7 +53,7 @@ export async function POST(request: NextRequest) {
           stripePaymentStatus: 'paid',
         },
       });
-      console.log(`Booking ${bookingId} confirmed via Stripe webhook`);
+      console.log(`Booking ${bookingId} confirmed via Stripe webhook${matchedStripeKey ? ' (location-specific key)' : ''}`);
     }
   }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import prisma from '@/lib/db';
-import { calculateBookingTotal, formatPriceWhole } from '@/lib/pricing';
+import { getActivePriceTiers, calculateBookingTotalWithTiers } from '@/lib/pricing';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,8 +29,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payment not required for HAF bookings' }, { status: 400 });
     }
 
+    const tiers = await getActivePriceTiers();
     const daysPerChild = booking.children.map((c) => c.dayBookings.length);
-    const { totalPence, perChild } = calculateBookingTotal(daysPerChild);
+    const { totalPence, perChild } = calculateBookingTotalWithTiers(daysPerChild, tiers);
+
+    const locationStripeKey = booking.camp.location?.stripeSecretKey;
+    const stripe = getStripe(locationStripeKey);
 
     const lineItems = booking.children.map((child, idx) => ({
       price_data: {
@@ -46,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
-    const session = await getStripe().checkout.sessions.create({
+    const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',

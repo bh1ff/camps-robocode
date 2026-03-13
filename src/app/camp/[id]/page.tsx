@@ -137,8 +137,8 @@ export default function CampLoginPage({ params }: { params: Promise<{ id: string
         </form>
 
         <div className="mt-6 text-center">
-          <a href="/superadmin" className="text-sm text-[#00adb3] hover:underline">
-            Super Admin Access
+          <a href="/admin" className="text-sm text-[#00adb3] hover:underline">
+            Admin Panel
           </a>
         </div>
       </div>

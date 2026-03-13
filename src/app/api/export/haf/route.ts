@@ -65,6 +65,10 @@ interface BookingWithChildren {
     age: number;
     schoolName: string | null;
     schoolYear: string | null;
+    hafCode: string | null;
+    fsmEligible: boolean;
+    ethnicity: string | null;
+    gender: string | null;
     hasSEND: boolean;
     hasEHCP: boolean;
     ehcpDetails: string | null;
@@ -123,8 +127,10 @@ function buildCouncilRegister(bookings: BookingWithChildren[]) {
         ? new Date(child.dateOfBirth).toLocaleDateString('en-GB')
         : '';
 
+      const hafCode = child.hafCode || booking.hafCode || `RC-${String(counter).padStart(4, '0')}`;
+
       rows.push([
-        csvEscape(`RC-${String(counter).padStart(4, '0')}`),
+        csvEscape(hafCode),
         csvEscape(child.firstName),
         csvEscape(child.lastName),
         csvEscape(dob),
@@ -132,7 +138,7 @@ function buildCouncilRegister(bookings: BookingWithChildren[]) {
         csvEscape(child.schoolName || ''),
         csvEscape(schoolYear),
         csvEscape(primarySecondary),
-        csvEscape('FSM'),
+        csvEscape(child.fsmEligible ? 'FSM' : 'Non-FSM'),
         csvEscape(child.hasSEND ? 'SEND' : 'Non-SEND'),
         csvEscape(attended),
         csvEscape(noShows),
@@ -164,6 +170,7 @@ function buildFullExport(bookings: BookingWithChildren[]) {
     'Address',
     'Postcode',
     'HAF Code',
+    'FSM Eligible',
     'Location',
     'Region',
     'Child First Name',
@@ -173,6 +180,8 @@ function buildFullExport(bookings: BookingWithChildren[]) {
     'School',
     'School Year',
     'Primary/Secondary',
+    'Ethnicity',
+    'Gender',
     'SEND',
     'EHCP',
     'EHCP Details',
@@ -204,7 +213,8 @@ function buildFullExport(bookings: BookingWithChildren[]) {
         csvEscape(booking.parentPhone),
         csvEscape(booking.address),
         csvEscape(booking.postcode),
-        csvEscape(booking.hafCode || ''),
+        csvEscape(child.hafCode || booking.hafCode || ''),
+        csvEscape(child.fsmEligible ? 'FSM' : 'Non-FSM'),
         csvEscape(booking.camp.location?.name || booking.camp.name),
         csvEscape(booking.camp.location?.region || ''),
         csvEscape(child.firstName),
@@ -214,6 +224,8 @@ function buildFullExport(bookings: BookingWithChildren[]) {
         csvEscape(child.schoolName || ''),
         csvEscape(schoolYear),
         csvEscape(primarySecondary),
+        csvEscape(child.ethnicity || ''),
+        csvEscape(child.gender || ''),
         csvEscape(child.hasSEND ? 'Yes' : 'No'),
         csvEscape(child.hasEHCP ? 'Yes' : 'No'),
         csvEscape(child.ehcpDetails || ''),

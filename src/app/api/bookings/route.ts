@@ -71,7 +71,6 @@ export async function POST(request: NextRequest) {
         parentPhone: data.parentPhone,
         address: data.address,
         postcode: data.postcode,
-        hafCode: isHaf ? (data as unknown as { hafCode: string }).hafCode : null,
         totalAmount: body.totalAmount || 0,
         campId: data.campId,
         children: {
@@ -82,6 +81,10 @@ export async function POST(request: NextRequest) {
             age: child.age,
             schoolName: child.schoolName,
             schoolYear: child.schoolYear,
+            hafCode: child.hafCode || null,
+            fsmEligible: child.fsmEligible ?? true,
+            ethnicity: child.ethnicity || null,
+            gender: child.gender || null,
             hasSEND: child.hasSEND,
             hasEHCP: child.hasEHCP,
             ehcpDetails: child.ehcpDetails || null,

@@ -1,16 +1,19 @@
 import Stripe from 'stripe';
 
-let _stripe: Stripe | null = null;
+const _instances = new Map<string, Stripe>();
 
-export function getStripe(): Stripe {
-  if (!_stripe) {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) {
-      throw new Error('STRIPE_SECRET_KEY is not set');
-    }
-    _stripe = new Stripe(key, {
+export function getStripe(secretKey?: string | null): Stripe {
+  const key = secretKey || process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error('STRIPE_SECRET_KEY is not set');
+  }
+
+  let instance = _instances.get(key);
+  if (!instance) {
+    instance = new Stripe(key, {
       apiVersion: '2026-02-25.clover',
     });
+    _instances.set(key, instance);
   }
-  return _stripe;
+  return instance;
 }

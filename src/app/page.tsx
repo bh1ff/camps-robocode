@@ -80,9 +80,10 @@ const NAV_LINKS = [
 const LOCATIONS = [
   {
     name: 'Robocode Shirley Centre',
+    slug: 'shirley',
     tag: 'Solihull',
     address: 'The Exchange, 26 Haslucks Green Rd, Shirley, B90 2EL',
-    dates: 'Mon–Thu, 14–17 & 21–24 April',
+    dates: 'Mon–Thu, 30 Mar – 2 Apr & 6–9 Apr',
     days: '8 days',
     time: '10:00 AM – 2:00 PM',
     haf: true,
@@ -91,9 +92,10 @@ const LOCATIONS = [
   },
   {
     name: 'Tudor Grange Academy Kingshurst',
+    slug: 'kingshurst',
     tag: 'Kingshurst',
     address: 'Cooks Lane, Fordbridge, B37 6NU',
-    dates: 'Mon–Thu, 21–24 April',
+    dates: 'Mon–Thu, 30 Mar – 2 Apr',
     days: '4 days',
     time: '10:00 AM – 2:00 PM',
     haf: true,
@@ -102,9 +104,10 @@ const LOCATIONS = [
   },
   {
     name: 'Birmingham City University',
+    slug: 'bcu',
     tag: 'Birmingham',
     address: 'Curzon Building, 4 Cardigan St, B4 7BD',
-    dates: 'Tue–Fri, 14–18 & 21–25 April',
+    dates: 'Mon–Thu, 30 Mar – 2 Apr & Tue–Thu, 7–9 Apr',
     days: '7 days',
     time: '10:00 AM – 2:00 PM',
     haf: true,
@@ -210,27 +213,27 @@ export default function CampsPage() {
               </h1>
 
               <p className="mt-6 text-lg md:text-xl text-white/80 font-[var(--font-body)] max-w-md">
-                Robotics, coding, 3D printing and more for ages 6–17.
+                Robotics, coding, 3D printing and more for <span className="whitespace-nowrap">ages 6–17.</span>
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link
                   href="/book/haf"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-cyan text-dark font-bold rounded-full text-base tracking-wide hover:bg-cyan-light transition-colors shadow-lg shadow-cyan/20"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan text-dark font-bold rounded-full text-base tracking-wide hover:bg-cyan-light transition-colors shadow-lg shadow-cyan/20"
                 >
                   Book Free Place (HAF)
                   <ArrowRight size={18} />
                 </Link>
                 <Link
                   href="/book/paid"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-pink text-white font-bold rounded-full text-base tracking-wide hover:bg-pink-light transition-colors shadow-lg shadow-pink/20"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-pink text-white font-bold rounded-full text-base tracking-wide hover:bg-pink-light transition-colors shadow-lg shadow-pink/20"
                 >
                   Book Paid Camp
                   <ArrowRight size={18} />
                 </Link>
               </div>
 
-              <p className="mt-10 text-[13px] text-white/50 tracking-wide font-[var(--font-body)] uppercase">
+              <p className="mt-10 text-[13px] text-white/50 tracking-wide font-[var(--font-body)] uppercase font-bold">
                 <span className="text-cyan">Ofsted Registered</span> &nbsp;·&nbsp; <span className="text-pink-light">22,000+ Students</span>
                 &nbsp;·&nbsp; <span className="text-orange">FTC Champions</span>
               </p>
@@ -239,7 +242,7 @@ export default function CampsPage() {
         </section>
 
         {/* ───────── SOCIAL PROOF STRIP ───────── */}
-        <section className="bg-gradient-to-r from-dark via-dark-mid to-dark border-t-2 border-cyan/40">
+        <section className="bg-gradient-to-r from-dark-mid/80 via-dark-mid/60 to-dark-mid/80 border-t-2 border-cyan/40">
           <div className="max-w-7xl mx-auto px-6 py-5 flex flex-wrap justify-center items-center gap-8 md:gap-14">
             <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)]">
               <span className="text-cyan font-bold text-lg drop-shadow-[0_0_8px_rgba(0,210,211,0.5)]">22,000+</span>
@@ -272,6 +275,7 @@ export default function CampsPage() {
                   { src: '/logos/first-tech-challenge.png', alt: 'FIRST Tech Challenge', w: 100, h: 60 },
                   { src: '/logos/aqa.svg', alt: 'AQA Exam Board', w: 100, h: 40 },
                   { src: '/logos/wjec.png', alt: 'WJEC CBAC', w: 80, h: 70 },
+                  { src: '/logos/ukri-innovateuk.png', alt: 'Innovate UK', w: 110, h: 50 },
                 ].map((logo) => (
                   <Image
                     key={`${setIdx}-${logo.alt}`}
@@ -408,6 +412,23 @@ export default function CampsPage() {
                 </Reveal>
               ))}
             </div>
+
+            <Reveal className="mt-12">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link
+                  href="/book/haf"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                >
+                  Book Free Place (HAF) <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/book/paid"
+                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                >
+                  Book Paid Camp <ArrowRight size={16} />
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -470,6 +491,31 @@ export default function CampsPage() {
                 />
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ───────── CTA BETWEEN MARQUEE AND LOCATIONS ───────── */}
+        <section className="bg-surface">
+          <div className="max-w-3xl mx-auto px-6 py-14 text-center">
+            <Reveal>
+              <p className="text-dark-mid/70 text-sm leading-relaxed">
+                Spaces fill up fast. Secure your child&apos;s place for Easter 2026 today.
+              </p>
+              <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/book/haf"
+                  className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                >
+                  Book Free Place (HAF) <ArrowRight size={16} />
+                </Link>
+                <Link
+                  href="/book/paid"
+                  className="inline-flex items-center gap-2 px-7 py-3 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                >
+                  Book Paid Camp <ArrowRight size={16} />
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -543,13 +589,23 @@ export default function CampsPage() {
                         </p>
                       </div>
 
-                      <div className="mt-6">
-                        <Link
-                          href={loc.haf ? '/book/haf' : '/book/paid'}
-                          className="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan text-dark text-sm font-bold rounded-full hover:bg-cyan-light transition-colors"
-                        >
-                          Book this location <ChevronRight size={14} />
-                        </Link>
+                      <div className="mt-6 flex flex-wrap gap-2">
+                        {loc.haf && (
+                          <Link
+                            href={`/book/haf?location=${loc.slug}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-full hover:bg-emerald-600 transition-colors"
+                          >
+                            Book Free (HAF) <ChevronRight size={14} />
+                          </Link>
+                        )}
+                        {loc.paid && (
+                          <Link
+                            href={`/book/paid?location=${loc.slug}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink text-white text-sm font-bold rounded-full hover:bg-pink-light transition-colors"
+                          >
+                            Book Paid <ChevronRight size={14} />
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -557,6 +613,25 @@ export default function CampsPage() {
               ))}
             </div>
 
+          </div>
+        </section>
+
+        {/* ───────── CTA AFTER LOCATIONS ───────── */}
+        <section className="bg-gradient-to-r from-dark via-dark-mid to-dark">
+          <div className="max-w-3xl mx-auto px-6 py-12 text-center">
+            <Reveal>
+              <p className="text-white/70 text-sm">
+                Not sure which location? All HAF places are completely free.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/book/haf"
+                  className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                >
+                  Check Eligibility & Book <ArrowRight size={16} />
+                </Link>
+              </div>
+            </Reveal>
           </div>
         </section>
 
@@ -694,6 +769,7 @@ export default function CampsPage() {
                   { src: '/logos/first-tech-challenge.png', alt: 'FIRST Tech Challenge', w: 110, h: 70 },
                   { src: '/logos/aqa.svg', alt: 'AQA Exam Board', w: 110, h: 45 },
                   { src: '/logos/wjec.png', alt: 'WJEC CBAC', w: 90, h: 80 },
+                  { src: '/logos/ukri-innovateuk.png', alt: 'Innovate UK', w: 120, h: 55 },
                 ].map((logo) => (
                   <Image
                     key={`${setIdx}-${logo.alt}`}
@@ -848,7 +924,7 @@ export default function CampsPage() {
 
         <div className="border-t border-white/8 py-5 text-xs text-white/30 relative">
           <p className="text-center">© {new Date().getFullYear()} RobocodeUK Limited. Company No. 14161031. All rights reserved.</p>
-          <Link href="/superadmin" className="absolute right-4 top-1/2 -translate-y-1/2 text-white/5 hover:text-white/30 transition-colors text-[10px]">Admin</Link>
+          <Link href="/admin" className="absolute right-4 top-1/2 -translate-y-1/2 text-white/5 hover:text-white/30 transition-colors text-[10px]">Admin</Link>
         </div>
       </footer>
     </>
@@ -922,28 +998,31 @@ function Navbar({
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 top-16 bg-dark/95 backdrop-blur-xl z-40 flex flex-col items-center justify-center gap-8"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden absolute top-16 left-0 right-0 bg-dark/80 backdrop-blur-2xl border-b border-white/10 shadow-2xl"
           >
-            {NAV_LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
+            <div className="px-6 py-5 flex flex-col gap-1">
+              {NAV_LINKS.map((l) => (
+                <a
+                  key={l.href}
+                  href={l.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-white/80 hover:text-white text-sm font-medium font-[var(--font-body)] py-2.5 border-b border-white/5 last:border-0 transition-colors"
+                >
+                  {l.label}
+                </a>
+              ))}
+              <Link
+                href="/book/haf"
                 onClick={() => setMobileMenuOpen(false)}
-                className="text-white text-2xl font-semibold font-[var(--font-body)]"
+                className="mt-3 px-6 py-3 bg-cyan text-dark font-semibold rounded-full text-sm text-center"
               >
-                {l.label}
-              </a>
-            ))}
-            <Link
-              href="/book/haf"
-              onClick={() => setMobileMenuOpen(false)}
-              className="mt-4 px-8 py-3.5 bg-cyan text-dark font-semibold rounded-full"
-            >
-              Book Now
-            </Link>
+                Book Now
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

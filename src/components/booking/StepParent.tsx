@@ -75,22 +75,6 @@ export default function StepParent({ form, updateForm, errors, bookingType }: Pr
           error={errors.postcode}
           placeholder="B1 1AA"
         />
-
-        {bookingType === 'haf' && (
-          <div className="pt-2 border-t border-gray-100">
-            <FormInput
-              label="HAF Code"
-              required
-              value={form.hafCode}
-              onChange={(e) => updateForm({ hafCode: e.target.value })}
-              error={errors.hafCode}
-              placeholder="Enter your HAF eligibility code"
-            />
-            <p className="text-xs text-[#05575c]/50 mt-1">
-              Your HAF code confirms your child is eligible for free Holiday Activities and Food provision.
-            </p>
-          </div>
-        )}
       </div>
     </div>
   );

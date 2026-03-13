@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import BookingWizard from '@/components/booking/BookingWizard';
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function HafBookingPage() {
-  return <BookingWizard bookingType="haf" />;
+  return (
+    <Suspense>
+      <BookingWizard bookingType="haf" />
+    </Suspense>
+  );
 }
