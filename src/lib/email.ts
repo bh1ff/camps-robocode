@@ -101,8 +101,7 @@ function buildConfirmationHtml(booking: BookingForEmail): string {
 
   <!-- Header -->
   <tr><td style="background:#003439;padding:32px 40px;text-align:center">
-    <h1 style="margin:0;color:#00dcde;font-size:28px;letter-spacing:1px">ROBOCODE</h1>
-    <p style="margin:4px 0 0;color:#83fdff;font-size:13px;letter-spacing:2px">HOLIDAY TECH CAMP</p>
+    <img src="https://camps.robocode.uk/logo-light.png" alt="Robocode" width="200" style="display:block;margin:0 auto;max-width:200px;height:auto" />
   </td></tr>
 
   <!-- Success banner -->
