@@ -197,8 +197,11 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
       if (!form.parentEmail.trim() || !form.parentEmail.includes('@'))
         newErrors.parentEmail = 'Valid email required';
       if (!form.parentPhone.trim()) newErrors.parentPhone = 'Required';
+      else if (form.parentPhone.trim().length < 5) newErrors.parentPhone = 'Enter a valid phone number';
       if (!form.address.trim()) newErrors.address = 'Required';
+      else if (form.address.trim().length < 3) newErrors.address = 'Address too short';
       if (!form.postcode.trim()) newErrors.postcode = 'Required';
+      else if (form.postcode.trim().length < 3) newErrors.postcode = 'Enter a valid postcode';
     }
 
     if (step === STEP.CHILDREN) {
@@ -290,7 +293,14 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
       const result = await res.json();
 
       if (!res.ok) {
-        setSubmitError(result.error || 'Booking failed');
+        let msg = result.error || 'Booking failed';
+        if (result.details?.fieldErrors) {
+          const fields = Object.entries(result.details.fieldErrors)
+            .map(([k, v]) => `${k}: ${(v as string[]).join(', ')}`)
+            .join('; ');
+          if (fields) msg += ` — ${fields}`;
+        }
+        setSubmitError(msg);
         setSubmitting(false);
         return;
       }

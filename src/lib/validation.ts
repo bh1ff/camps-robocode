@@ -14,8 +14,8 @@ export const childSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
   age: z.number().min(4).max(18),
-  schoolName: z.string().min(1, 'School name is required'),
-  schoolYear: z.string().min(1, 'School year is required'),
+  schoolName: z.string().optional(),
+  schoolYear: z.string().optional(),
   hafCode: z.string().optional(),
   fsmEligible: z.boolean().optional(),
   ethnicity: z.string().optional(),
@@ -29,6 +29,8 @@ export const childSchema = z.object({
 });
 
 const hafChildSchema = childSchema.extend({
+  schoolName: z.string().min(1, 'School name is required'),
+  schoolYear: z.string().min(1, 'School year is required'),
   hafCode: z.string().min(1, 'HAF code is required'),
   fsmEligible: z.boolean(),
 });
