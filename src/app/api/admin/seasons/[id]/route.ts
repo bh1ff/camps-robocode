@@ -6,6 +6,13 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const data = await request.json();
 
+    if (data.active === true) {
+      await prisma.season.updateMany({
+        where: { id: { not: id } },
+        data: { active: false },
+      });
+    }
+
     const season = await prisma.season.update({
       where: { id },
       data: {

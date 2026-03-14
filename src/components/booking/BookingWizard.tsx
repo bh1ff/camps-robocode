@@ -25,6 +25,8 @@ export interface LocationData {
   camps: {
     id: string;
     name: string;
+    allowsHaf: boolean;
+    allowsPaid: boolean;
     campDays: { id: string; date: string; dayLabel: string; weekNumber: number }[];
   }[];
 }
@@ -107,6 +109,7 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
   const [gateRegion, setGateRegion] = useState('');
   const [showChangeOptions, setShowChangeOptions] = useState(false);
   const [priceTiers, setPriceTiers] = useState<PriceTierData[]>([]);
+  const [seasonTitle, setSeasonTitle] = useState('');
   const router = useRouter();
 
   const [form, setForm] = useState<BookingFormState>({
@@ -130,6 +133,11 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
       .then((tiers: PriceTierData[]) => {
         if (Array.isArray(tiers) && tiers.length > 0) setPriceTiers(tiers);
       })
+      .catch(() => {});
+
+    fetch('/api/season')
+      .then((r) => r.json())
+      .then((s: { title: string }) => { if (s?.title) setSeasonTitle(s.title); })
       .catch(() => {});
 
     fetch('/api/locations')
@@ -405,7 +413,7 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
                 <span className="text-white/60">Book your spot</span>
               </>
             )}
-            <span className="text-[#00dcde] ml-2 font-bold">Easter 2026</span>
+            <span className="text-[#00dcde] ml-2 font-bold">{seasonTitle || 'Holiday Camp'}</span>
           </p>
         </div>
       </div>

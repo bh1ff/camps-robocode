@@ -196,6 +196,7 @@ export default function CampsPage() {
   useLenis();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pricingRows, setPricingRows] = useState<PricingRow[]>(FALLBACK_PRICING);
+  const [seasonTitle, setSeasonTitle] = useState('');
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -212,6 +213,10 @@ export default function CampsPage() {
           setPricingRows(buildPricingRows(tiers));
         }
       })
+      .catch(() => {});
+    fetch('/api/season')
+      .then((r) => r.json())
+      .then((s: { title: string }) => { if (s?.title) setSeasonTitle(s.title); })
       .catch(() => {});
   }, []);
 
@@ -252,7 +257,7 @@ export default function CampsPage() {
               <h1 className="font-[var(--font-display)] text-[clamp(2.8rem,7vw,5.5rem)] leading-[1.05] tracking-tight text-white uppercase">
                 <span className="block">Holiday</span>
                 <span className="block bg-gradient-to-r from-cyan via-pink to-orange bg-clip-text text-transparent animate-gradient">Tech Camps</span>
-                <span className="block">Easter 2026</span>
+                <span className="block">{seasonTitle || 'Holiday Camp'}</span>
               </h1>
 
               <p className="mt-6 text-lg md:text-xl text-white/80 font-[var(--font-body)] max-w-md">
@@ -542,7 +547,7 @@ export default function CampsPage() {
           <div className="max-w-3xl mx-auto px-6 py-14 text-center">
             <Reveal>
               <p className="text-dark-mid/70 text-sm leading-relaxed">
-                Spaces fill up fast. Secure your child&apos;s place for Easter 2026 today.
+                Spaces fill up fast. Secure your child&apos;s place for {seasonTitle || 'camp'} today.
               </p>
               <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
@@ -843,7 +848,7 @@ export default function CampsPage() {
               <h2 className="font-[var(--font-display)] text-3xl md:text-5xl text-white uppercase leading-tight">
                 Book their place for
                 <br />
-                <span className="bg-gradient-to-r from-cyan via-pink-light to-orange bg-clip-text text-transparent">Easter 2026</span>
+                <span className="bg-gradient-to-r from-cyan via-pink-light to-orange bg-clip-text text-transparent">{seasonTitle || 'Holiday Camp'}</span>
               </h2>
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 <Link

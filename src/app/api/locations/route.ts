@@ -3,9 +3,18 @@ import prisma from '@/lib/db';
 
 export async function GET() {
   try {
+    const activeSeason = await prisma.season.findFirst({
+      where: { active: true },
+      select: { id: true },
+    });
+
     const locations = await prisma.location.findMany({
       include: {
         camps: {
+          where: {
+            active: true,
+            ...(activeSeason ? { seasonId: activeSeason.id } : {}),
+          },
           include: {
             campDays: { orderBy: { date: 'asc' } },
             _count: { select: { bookings: true } },
@@ -15,7 +24,8 @@ export async function GET() {
       orderBy: { name: 'asc' },
     });
 
-    return NextResponse.json(locations);
+    const filtered = locations.filter((loc) => loc.camps.length > 0);
+    return NextResponse.json(filtered);
   } catch (error) {
     console.error('Get locations error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });

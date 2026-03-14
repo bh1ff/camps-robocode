@@ -66,8 +66,8 @@ export default function StepLocation({ locations, form, updateForm, errors, book
   };
 
   const relevantLocations = locations.filter((loc) => {
-    if (bookingType === 'haf' && loc.hafSeatsTotal <= 0) return false;
-    if (bookingType === 'paid' && !loc.allowsPaid) return false;
+    if (bookingType === 'haf') return loc.camps.some((c) => c.allowsHaf);
+    if (bookingType === 'paid') return loc.camps.some((c) => c.allowsPaid);
     return true;
   });
 

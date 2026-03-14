@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import prisma from "@/lib/db";
 
 const airForce = localFont({
   src: "../fonts/AirForce.otf",
@@ -16,45 +17,70 @@ const myriadPro = localFont({
   weight: "400",
 });
 
-export const metadata: Metadata = {
-  title: "Robocode Easter Tech Camp 2026 | Ages 6–17 | Robotics, Coding & 3D Printing",
-  description: "Project-packed holiday tech camps in Solihull, Kingshurst, and Birmingham for ages 6–17. Robotics, electronics, game development, 3D printing, and mechanical engineering. Ofsted-registered. HAF-funded free places available. Book now for Easter 2026.",
-  keywords: ["robotics classes Solihull", "coding camps Birmingham", "STEM holiday camps", "HAF holiday camps Solihull", "kids coding camp", "robotics for kids", "tech camp Easter 2026", "free holiday camps Solihull", "Robocode"],
-  icons: {
-    icon: "/mascot.png",
-    apple: "/mascot.png",
-  },
-  openGraph: {
-    title: "Robocode Easter Tech Camp 2026 | Ages 6–17",
-    description: "Build big in the holidays. Hands-on robotics, electronics, game development, and 3D printing for ages 6–17. Ofsted-registered. HAF-funded free places available.",
-    images: ["/camp/rc-10.jpg"],
-    type: "website",
-    url: "https://camps.robocode.uk",
-    siteName: "Robocode",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Robocode Easter Tech Camp 2026",
-    description: "Project-packed holiday tech camps for ages 6–17. Robotics, electronics, game dev, 3D printing. Ofsted-registered. HAF-funded places available.",
-    images: ["/camp/rc-10.jpg"],
-  },
-  alternates: {
-    canonical: "https://camps.robocode.uk",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+async function getActiveSeason() {
+  try {
+    const season = await prisma.season.findFirst({
+      where: { active: true },
+      select: { title: true, startDate: true, endDate: true },
+    });
+    return season;
+  } catch {
+    return null;
+  }
+}
 
-function JsonLd() {
+export async function generateMetadata(): Promise<Metadata> {
+  const season = await getActiveSeason();
+  const seasonTitle = season?.title || "Holiday Tech Camp";
+  const startDate = season?.startDate ? new Date(season.startDate).toISOString().slice(0, 10) : undefined;
+  const endDate = season?.endDate ? new Date(season.endDate).toISOString().slice(0, 10) : undefined;
+
+  return {
+    title: `Robocode ${seasonTitle} | Ages 6–17 | Robotics, Coding & 3D Printing`,
+    description: `Project-packed holiday tech camps in Solihull, Kingshurst, and Birmingham for ages 6–17. Robotics, electronics, game development, 3D printing, and mechanical engineering. Ofsted-registered. HAF-funded free places available. Book now for ${seasonTitle}.`,
+    keywords: ["robotics classes Solihull", "coding camps Birmingham", "STEM holiday camps", "HAF holiday camps Solihull", "kids coding camp", "robotics for kids", `tech camp ${seasonTitle}`, "free holiday camps Solihull", "Robocode"],
+    icons: {
+      icon: "/mascot.png",
+      apple: "/mascot.png",
+    },
+    openGraph: {
+      title: `Robocode ${seasonTitle} | Ages 6–17`,
+      description: "Build big in the holidays. Hands-on robotics, electronics, game development, and 3D printing for ages 6–17. Ofsted-registered. HAF-funded free places available.",
+      images: ["/camp/rc-10.jpg"],
+      type: "website",
+      url: "https://camps.robocode.uk",
+      siteName: "Robocode",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Robocode ${seasonTitle}`,
+      description: "Project-packed holiday tech camps for ages 6–17. Robotics, electronics, game dev, 3D printing. Ofsted-registered. HAF-funded places available.",
+      images: ["/camp/rc-10.jpg"],
+    },
+    alternates: {
+      canonical: "https://camps.robocode.uk",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+    other: startDate && endDate ? { "event:start_date": startDate, "event:end_date": endDate } : undefined,
+  };
+}
+
+async function JsonLd() {
+  const season = await getActiveSeason();
+  const seasonTitle = season?.title || "Holiday Tech Camp";
+  const startDate = season?.startDate ? new Date(season.startDate).toISOString().slice(0, 10) : "2026-04-14";
+  const endDate = season?.endDate ? new Date(season.endDate).toISOString().slice(0, 10) : "2026-04-25";
+
   const eventSchema = {
     "@context": "https://schema.org",
     "@type": "Event",
-    "name": "Robocode Easter Tech Camp 2026",
+    "name": `Robocode ${seasonTitle}`,
     "description": "Project-packed holiday tech camps for ages 6–17. Robotics, electronics, game development, 3D printing, and mechanical engineering. HAF-funded free places available.",
-    "startDate": "2026-04-14",
-    "endDate": "2026-04-25",
+    "startDate": startDate,
+    "endDate": endDate,
     "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
     "eventStatus": "https://schema.org/EventScheduled",
     "image": "https://camps.robocode.uk/camp/rc-10.jpg",

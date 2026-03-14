@@ -11,6 +11,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (data.description !== undefined) updateData.description = data.description;
     if (data.startDate !== undefined) updateData.startDate = new Date(data.startDate);
     if (data.endDate !== undefined) updateData.endDate = new Date(data.endDate);
+    if (data.active !== undefined) updateData.active = data.active;
+    if (data.allowsHaf !== undefined) updateData.allowsHaf = data.allowsHaf;
+    if (data.allowsPaid !== undefined) updateData.allowsPaid = data.allowsPaid;
     if (data.adminPassword !== undefined) updateData.adminPassword = data.adminPassword;
     if (data.teacherPassword !== undefined) updateData.teacherPassword = data.teacherPassword;
     if (data.lunchTime !== undefined) updateData.lunchTime = data.lunchTime;

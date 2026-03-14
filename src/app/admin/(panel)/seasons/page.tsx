@@ -3,6 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
 
+interface CampInSeason {
+  id: string;
+  name: string;
+  active: boolean;
+  allowsHaf: boolean;
+  allowsPaid: boolean;
+  location: { name: string } | null;
+  _count: { bookings: number };
+}
+
 interface Season {
   id: string;
   title: string;
@@ -10,7 +20,7 @@ interface Season {
   startDate: string;
   endDate: string;
   active: boolean;
-  camps: { id: string; name: string; location: { name: string } | null; _count: { bookings: number } }[];
+  camps: CampInSeason[];
   priceTiers: { id: string; days: number; pricePence: number }[];
 }
 
@@ -59,10 +69,12 @@ export default function SeasonsPage() {
   };
 
   const toggleActive = async (season: Season) => {
+    const newActive = !season.active;
+    if (newActive && !confirm(`Set "${season.title}" as the active season? This will deactivate all other seasons.`)) return;
     await fetch(`/api/admin/seasons/${season.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ active: !season.active }),
+      body: JSON.stringify({ active: newActive }),
     });
     load();
   };
@@ -75,6 +87,15 @@ export default function SeasonsPage() {
       alert(data.error || 'Delete failed');
       return;
     }
+    load();
+  };
+
+  const updateCamp = async (campId: string, updates: Record<string, unknown>) => {
+    await fetch(`/api/admin/camps/${campId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
     load();
   };
 
@@ -132,11 +153,36 @@ export default function SeasonsPage() {
               </div>
 
               {season.camps.length > 0 && (
-                <div className="border-t border-gray-50 pt-3 space-y-1.5">
+                <div className="border-t border-gray-50 pt-3 space-y-2">
                   {season.camps.map((camp) => (
-                    <div key={camp.id} className="flex items-center justify-between text-sm">
-                      <span className="text-[#05575c]/70">{camp.name} {camp.location && <span className="text-[#05575c]/40">({camp.location.name})</span>}</span>
-                      <span className="text-xs text-[#05575c]/40">{camp._count.bookings} bookings</span>
+                    <div key={camp.id} className={`flex items-center justify-between text-sm rounded-lg px-3 py-2 transition-colors ${camp.active ? 'bg-gray-50' : 'bg-gray-50/50 opacity-50'}`}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <button
+                          onClick={() => updateCamp(camp.id, { active: !camp.active })}
+                          className={`shrink-0 w-8 h-[18px] rounded-full relative transition-colors ${camp.active ? 'bg-emerald-400' : 'bg-gray-300'}`}
+                          title={camp.active ? 'Active — click to deactivate' : 'Inactive — click to activate'}
+                        >
+                          <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-all ${camp.active ? 'left-[17px]' : 'left-0.5'}`} />
+                        </button>
+                        <span className="text-[#05575c]/70 truncate">{camp.name} {camp.location && <span className="text-[#05575c]/40">({camp.location.name})</span>}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0 ml-3">
+                        <button
+                          onClick={() => updateCamp(camp.id, { allowsHaf: !camp.allowsHaf })}
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full transition-colors ${camp.allowsHaf ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                          title={camp.allowsHaf ? 'HAF enabled — click to disable' : 'HAF disabled — click to enable'}
+                        >
+                          HAF
+                        </button>
+                        <button
+                          onClick={() => updateCamp(camp.id, { allowsPaid: !camp.allowsPaid })}
+                          className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full transition-colors ${camp.allowsPaid ? 'bg-pink/20 text-[#ff00bf] hover:bg-pink/30' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                          title={camp.allowsPaid ? 'Paid enabled — click to disable' : 'Paid disabled — click to enable'}
+                        >
+                          Paid
+                        </button>
+                        <span className="text-xs text-[#05575c]/40 ml-1 w-16 text-right">{camp._count.bookings} bookings</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -191,6 +237,9 @@ export default function SeasonsPage() {
                 />
                 <span className="text-sm text-[#003439]">Active (visible on public site)</span>
               </label>
+              {form.active && !editing?.active && (
+                <p className="text-xs text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg">This will deactivate all other seasons.</p>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 mt-5">
