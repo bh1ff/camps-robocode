@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import prisma from '@/lib/db';
+import { sendConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -54,6 +55,19 @@ export async function POST(request: NextRequest) {
         },
       });
       console.log(`Booking ${bookingId} confirmed via Stripe webhook${matchedStripeKey ? ' (location-specific key)' : ''}`);
+
+      const fullBooking = await prisma.booking.findUnique({
+        where: { id: bookingId },
+        include: {
+          children: { include: { dayBookings: { include: { campDay: true } } } },
+          camp: { include: { location: true } },
+        },
+      });
+      if (fullBooking) {
+        sendConfirmationEmail(fullBooking).catch((err) =>
+          console.error('Confirmation email failed:', err)
+        );
+      }
     }
   }
 
