@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { hafBookingSchema, paidBookingSchema } from '@/lib/validation';
+import { sendConfirmationEmail } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -105,6 +106,21 @@ export async function POST(request: NextRequest) {
         },
       },
     });
+
+    if (isHaf) {
+      const fullBooking = await prisma.booking.findUnique({
+        where: { id: booking.id },
+        include: {
+          children: { include: { dayBookings: { include: { campDay: true } } } },
+          camp: { include: { location: true } },
+        },
+      });
+      if (fullBooking) {
+        sendConfirmationEmail(fullBooking).catch((err) =>
+          console.error('HAF confirmation email failed:', err)
+        );
+      }
+    }
 
     return NextResponse.json({ success: true, booking });
   } catch (error) {

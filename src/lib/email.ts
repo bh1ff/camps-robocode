@@ -43,6 +43,7 @@ interface BookingChild {
 
 interface BookingForEmail {
   id: string;
+  type: string;
   parentFirstName: string;
   parentLastName: string;
   parentEmail: string;
@@ -68,6 +69,7 @@ function buildConfirmationHtml(booking: BookingForEmail): string {
   const locationName = booking.camp.location?.name || booking.camp.name;
   const address = booking.camp.location?.address || '';
   const bookingRef = booking.id.slice(0, 8).toUpperCase();
+  const isHaf = booking.type === 'haf';
 
   const allDays = booking.children
     .flatMap((c) => c.dayBookings.map((db) => db.campDay))
@@ -107,7 +109,7 @@ function buildConfirmationHtml(booking: BookingForEmail): string {
   <tr><td style="background:linear-gradient(135deg,#edfffe,#fff0fd);padding:28px 40px;text-align:center">
     <div style="width:56px;height:56px;margin:0 auto 12px;background:#00dcde;border-radius:50%;line-height:56px;font-size:28px;color:#fff">&#10003;</div>
     <h2 style="margin:0;color:#003439;font-size:22px">Booking Confirmed!</h2>
-    <p style="margin:8px 0 0;color:#05575c;font-size:14px">Thank you, ${booking.parentFirstName}. Your payment has been received.</p>
+    <p style="margin:8px 0 0;color:#05575c;font-size:14px">Thank you, ${booking.parentFirstName}. ${isHaf ? 'Your free place has been secured.' : 'Your payment has been received.'}</p>
   </td></tr>
 
   <!-- Details -->
@@ -126,8 +128,8 @@ function buildConfirmationHtml(booking: BookingForEmail): string {
         <td style="padding:8px 0;border-bottom:1px solid #eee">10:00 AM – 2:00 PM</td>
       </tr>
       <tr>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;color:#003439">Amount Paid</td>
-        <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;color:#ff00bf">£${booking.totalAmount.toFixed(2)}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;color:#003439">${isHaf ? 'Cost' : 'Amount Paid'}</td>
+        <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:bold;color:#ff00bf">${isHaf ? 'Free (HAF Funded)' : `£${booking.totalAmount.toFixed(2)}`}</td>
       </tr>
     </table>
   </td></tr>
@@ -190,7 +192,7 @@ export async function sendConfirmationEmail(booking: BookingForEmail): Promise<v
     },
     body: JSON.stringify({
       message: {
-        subject: `Booking Confirmed — Robocode Holiday Tech Camp (${booking.id.slice(0, 8).toUpperCase()})`,
+        subject: `Booking Confirmed — Robocode Holiday Tech Camp${booking.type === 'haf' ? ' (HAF)' : ''} (${booking.id.slice(0, 8).toUpperCase()})`,
         body: {
           contentType: 'HTML',
           content: buildConfirmationHtml(booking),
