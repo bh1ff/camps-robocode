@@ -11,7 +11,7 @@ import StepParent from './StepParent';
 import StepChildren from './StepChildren';
 import StepDays from './StepDays';
 import StepReview from './StepReview';
-import { calculateBookingTotal, formatPriceWhole } from '@/lib/pricing';
+import { calculateBookingTotalWithTiers, formatPriceWhole, type PriceTierData } from '@/lib/pricing';
 
 export interface LocationData {
   id: string;
@@ -106,6 +106,7 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [gateRegion, setGateRegion] = useState('');
   const [showChangeOptions, setShowChangeOptions] = useState(false);
+  const [priceTiers, setPriceTiers] = useState<PriceTierData[]>([]);
   const router = useRouter();
 
   const [form, setForm] = useState<BookingFormState>({
@@ -124,6 +125,13 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
   });
 
   useEffect(() => {
+    fetch('/api/pricing')
+      .then((r) => r.json())
+      .then((tiers: PriceTierData[]) => {
+        if (Array.isArray(tiers) && tiers.length > 0) setPriceTiers(tiers);
+      })
+      .catch(() => {});
+
     fetch('/api/locations')
       .then((res) => res.json())
       .then((data) => {
@@ -243,8 +251,8 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
   const selectedCamp = selectedLocation?.camps.find((c) => c.id === form.campId);
   const selectedRegion = selectedLocation?.region || '';
 
-  const pricingInfo = bookingType === 'paid'
-    ? calculateBookingTotal(form.children.map(() => form.selectedDays.length))
+  const pricingInfo = bookingType === 'paid' && priceTiers.length > 0
+    ? calculateBookingTotalWithTiers(form.children.map(() => form.selectedDays.length), priceTiers)
     : null;
 
   const handleSubmit = async () => {
@@ -505,6 +513,7 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
               errors={errors}
               bookingType={bookingType}
               childCount={form.numberOfChildren}
+              priceTiers={priceTiers}
             />
           )}
 

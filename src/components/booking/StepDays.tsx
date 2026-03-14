@@ -1,6 +1,6 @@
 'use client';
 
-import { calculateBookingTotal, formatPriceWhole } from '@/lib/pricing';
+import { calculateBookingTotalWithTiers, formatPriceWhole, type PriceTierData } from '@/lib/pricing';
 
 interface CampDay {
   id: string;
@@ -16,9 +16,10 @@ interface Props {
   errors: Record<string, string>;
   bookingType: 'haf' | 'paid';
   childCount: number;
+  priceTiers: PriceTierData[];
 }
 
-export default function StepDays({ campDays, selectedDays, onChange, errors, bookingType, childCount }: Props) {
+export default function StepDays({ campDays, selectedDays, onChange, errors, bookingType, childCount, priceTiers }: Props) {
   const week1 = campDays.filter((d) => d.weekNumber === 1);
   const week2 = campDays.filter((d) => d.weekNumber === 2);
 
@@ -42,8 +43,8 @@ export default function StepDays({ campDays, selectedDays, onChange, errors, boo
     }
   };
 
-  const pricingInfo = bookingType === 'paid' && selectedDays.length > 0
-    ? calculateBookingTotal(Array(childCount).fill(selectedDays.length))
+  const pricingInfo = bookingType === 'paid' && selectedDays.length > 0 && priceTiers.length > 0
+    ? calculateBookingTotalWithTiers(Array(childCount).fill(selectedDays.length), priceTiers)
     : null;
 
   return (

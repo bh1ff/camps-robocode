@@ -137,12 +137,43 @@ const TESTIMONIALS = [
   },
 ];
 
-const PRICING = [
-  { days: '1 day', price: 25, perDay: '£25', save: null, badge: null },
-  { days: '2 days', price: 40, perDay: '£20', save: '£10', badge: null },
-  { days: '4 days', price: 75, perDay: '£18.75', save: '£25', badge: null },
-  { days: '8 days', price: 140, perDay: '£17.50', save: '£60', badge: 'Best Value' },
-];
+interface PricingRow {
+  days: string;
+  price: number;
+  perDay: string;
+  save: string | null;
+  badge: string | null;
+}
+
+function buildPricingRows(tiers: { days: number; pricePence: number }[]): PricingRow[] {
+  const sorted = [...tiers].sort((a, b) => a.days - b.days);
+  const singleDayRate = sorted.find((t) => t.days === 1);
+  const basePerDay = singleDayRate ? singleDayRate.pricePence : sorted[0]?.pricePence ?? 0;
+  const maxDays = Math.max(...sorted.map((t) => t.days));
+
+  return sorted.map((t) => {
+    const pounds = t.pricePence / 100;
+    const perDay = t.pricePence / t.days / 100;
+    const fullPrice = basePerDay * t.days;
+    const saving = fullPrice - t.pricePence;
+    const perDayStr = perDay % 1 === 0 ? `£${perDay}` : `£${perDay.toFixed(2)}`;
+
+    return {
+      days: `${t.days} day${t.days !== 1 ? 's' : ''}`,
+      price: pounds % 1 === 0 ? pounds : Number(pounds.toFixed(2)),
+      perDay: perDayStr,
+      save: saving > 0 ? `£${saving / 100}` : null,
+      badge: t.days === maxDays && sorted.length > 1 ? 'Best Value' : null,
+    };
+  });
+}
+
+const FALLBACK_PRICING: PricingRow[] = buildPricingRows([
+  { days: 1, pricePence: 2500 },
+  { days: 2, pricePence: 4000 },
+  { days: 4, pricePence: 7500 },
+  { days: 8, pricePence: 14000 },
+]);
 
 const MARQUEE_IMAGES = [
   '/camp/marquee-arduino-smile.jpg',
@@ -164,6 +195,7 @@ const MARQUEE_IMAGES = [
 export default function CampsPage() {
   useLenis();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [pricingRows, setPricingRows] = useState<PricingRow[]>(FALLBACK_PRICING);
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -171,6 +203,17 @@ export default function CampsPage() {
   });
   const heroImgY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+
+  useEffect(() => {
+    fetch('/api/pricing')
+      .then((r) => r.json())
+      .then((tiers: { days: number; pricePence: number }[]) => {
+        if (Array.isArray(tiers) && tiers.length > 0) {
+          setPricingRows(buildPricingRows(tiers));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <>
@@ -665,7 +708,7 @@ export default function CampsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {PRICING.map((p) => (
+                    {pricingRows.map((p) => (
                       <tr
                         key={p.days}
                         className={clsx(
