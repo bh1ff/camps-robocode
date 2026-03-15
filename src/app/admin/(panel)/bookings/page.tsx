@@ -722,28 +722,11 @@ function BookingsPageInner() {
                     The parent will be asked to provide a HAF code for each child when they complete the form.
                   </p>
                 )}
+                {/* TODO: Re-enable SMS/Both options after Twilio setup (22 Mar 2026) */}
                 <div>
-                  <label className={lbl}>Send Via</label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {([['email', 'Email', Mail], ['sms', 'SMS', MessageSquare], ['both', 'Both', Send]] as const).map(([val, label, Icon]) => (
-                      <button key={val} type="button" onClick={() => setLinkSendMethod(val)} className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-semibold border transition-all ${linkSendMethod === val ? 'border-[#003439] bg-[#003439]/5 text-[#003439]' : 'border-gray-200 text-[#05575c]/40 hover:border-gray-300'}`}>
-                        <Icon size={12} /> {label}
-                      </button>
-                    ))}
-                  </div>
+                  <label className={lbl}>Parent Email</label>
+                  <input type="email" value={linkEmail} onChange={(e) => setLinkEmail(e.target.value)} className={inp} placeholder="parent@example.com" />
                 </div>
-                {(linkSendMethod === 'email' || linkSendMethod === 'both') && (
-                  <div>
-                    <label className={lbl}>Parent Email</label>
-                    <input type="email" value={linkEmail} onChange={(e) => setLinkEmail(e.target.value)} className={inp} placeholder="parent@example.com" />
-                  </div>
-                )}
-                {(linkSendMethod === 'sms' || linkSendMethod === 'both') && (
-                  <div>
-                    <label className={lbl}>Phone Number</label>
-                    <input type="tel" value={linkPhone} onChange={(e) => setLinkPhone(e.target.value)} className={inp} placeholder="+447..." />
-                  </div>
-                )}
                 <div className="flex justify-end gap-2 mt-4">
                   <button onClick={() => setShowSendLink(false)} className="px-4 py-2 rounded-xl text-sm text-[#05575c]/60 hover:bg-gray-50">Cancel</button>
                   <button onClick={sendLink} disabled={linkSending || !linkSendValid} className="px-4 py-2 rounded-xl bg-[#003439] text-white text-sm font-semibold hover:bg-[#004a52] disabled:opacity-40">
