@@ -13,6 +13,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (data.region !== undefined) updateData.region = data.region;
     if (data.capacityPerDay !== undefined) updateData.capacityPerDay = parseInt(data.capacityPerDay);
     if (data.hafSeatsTotal !== undefined) updateData.hafSeatsTotal = parseInt(data.hafSeatsTotal);
+    if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl || null;
     if (data.allowsPaid !== undefined) updateData.allowsPaid = data.allowsPaid;
     if (data.stripeSecretKey !== undefined) updateData.stripeSecretKey = data.stripeSecretKey || null;
     if (data.stripePublishableKey !== undefined) updateData.stripePublishableKey = data.stripePublishableKey || null;

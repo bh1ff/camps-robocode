@@ -56,8 +56,8 @@ function EligibilityGate({ region, onConfirm }: {
   const [livesInArea, setLivesInArea] = useState<boolean | null>(null);
   const [hasCouncilCode, setHasCouncilCode] = useState<boolean | null>(null);
 
-  const regionLabel = region === 'birmingham' ? 'Birmingham' : 'Solihull';
-  const councilName = region === 'birmingham' ? 'Birmingham City Council' : 'Solihull Council';
+  const regionLabel = region.charAt(0).toUpperCase() + region.slice(1);
+  const councilName = `${regionLabel} Council`;
 
   return (
     <div className="space-y-5">
@@ -395,7 +395,7 @@ function SchoolSelect({ value, onChange, error, region, manualOnly }: {
 export default function StepChildren({ form, updateChild, setChildCount, errors, bookingType, locationRegion }: Props) {
   const isHaf = bookingType === 'haf';
   const isBirmingham = locationRegion === 'birmingham';
-  const regionLabel = locationRegion === 'birmingham' ? 'Birmingham' : 'Solihull';
+  const regionLabel = locationRegion.charAt(0).toUpperCase() + locationRegion.slice(1);
 
   const [eligibility, setEligibility] = useState<EligibilityRoute>('unchecked');
   const eligible = eligibility === 'school_in_area' || eligibility === 'lives_in_area';

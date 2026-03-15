@@ -4,26 +4,6 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { LocationData, BookingFormState } from './BookingWizard';
 
-const LOCATION_IMAGES: Record<string, string> = {
-  'robocode centre': '/camp/location-shirley-centre.jpg',
-  'robocode shirley': '/camp/location-shirley-centre.jpg',
-  'shirley': '/camp/location-shirley-centre.jpg',
-  'solihull': '/camp/location-shirley-centre.jpg',
-  'kingshurst': '/camp/location-kingshurst.jpg',
-  'tudor grange': '/camp/location-kingshurst.jpg',
-  'birmingham city': '/camp/location-bcu.jpg',
-  'bcu': '/camp/location-bcu.jpg',
-  'curzon': '/camp/location-bcu.jpg',
-};
-
-function getLocationImage(name: string): string {
-  const lower = name.toLowerCase();
-  for (const [key, src] of Object.entries(LOCATION_IMAGES)) {
-    if (lower.includes(key)) return src;
-  }
-  return '/camp/location-shirley-centre.jpg';
-}
-
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -33,13 +13,61 @@ function ordinal(n: number): string {
   return n + (s[n % 10] || s[0]);
 }
 
-function formatCampDate(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  return `${DAY_NAMES[d.getUTCDay()]} ${ordinal(d.getUTCDate())} ${MONTH_NAMES[d.getUTCMonth()]}`;
-}
+function summariseCampDates(dayObjs: { id: string; date: string }[]): string {
+  if (dayObjs.length === 0) return '';
+  const dates = dayObjs
+    .map((d) => new Date(d.date))
+    .filter((d) => !isNaN(d.getTime()))
+    .sort((a, b) => a.getTime() - b.getTime());
+  if (dates.length === 0) return '';
 
-type RegionFilter = 'all' | 'solihull' | 'birmingham';
+  const runs: Date[][] = [];
+  let run: Date[] = [dates[0]];
+  for (let i = 1; i < dates.length; i++) {
+    const gap = Math.round((dates[i].getTime() - run[run.length - 1].getTime()) / 86400000);
+    if (gap === 1) {
+      run.push(dates[i]);
+    } else {
+      runs.push(run);
+      run = [dates[i]];
+    }
+  }
+  runs.push(run);
+
+  const groups: Date[][][] = [[runs[0]]];
+  for (let i = 1; i < runs.length; i++) {
+    const lastGroup = groups[groups.length - 1];
+    const lastRun = lastGroup[lastGroup.length - 1];
+    const gap = Math.round((runs[i][0].getTime() - lastRun[lastRun.length - 1].getTime()) / 86400000);
+    const sameLen = lastRun.length === runs[i].length;
+    const sameDow = lastRun[0].getUTCDay() === runs[i][0].getUTCDay();
+    if (gap >= 2 && gap <= 5 && sameLen && sameDow) {
+      lastGroup.push(runs[i]);
+    } else {
+      groups.push([runs[i]]);
+    }
+  }
+
+  const parts = groups.map((group) => {
+    const all = group.flat();
+    const first = all[0];
+    const last = all[all.length - 1];
+    if (all.length === 1) {
+      return `${DAY_NAMES[first.getUTCDay()]} ${ordinal(first.getUTCDate())} ${MONTH_NAMES[first.getUTCMonth()]}`;
+    }
+    const dows = [...new Set(all.map((d) => d.getUTCDay()))].sort((a, b) => a - b);
+    const dowStr = dows.length === 1
+      ? DAY_NAMES[dows[0]]
+      : `${DAY_NAMES[dows[0]]}–${DAY_NAMES[dows[dows.length - 1]]}`;
+    const sameMonth = first.getUTCMonth() === last.getUTCMonth();
+    if (sameMonth) {
+      return `${dowStr}, ${ordinal(first.getUTCDate())}–${ordinal(last.getUTCDate())} ${MONTH_NAMES[first.getUTCMonth()]}`;
+    }
+    return `${dowStr}, ${ordinal(first.getUTCDate())} ${MONTH_NAMES[first.getUTCMonth()]} – ${ordinal(last.getUTCDate())} ${MONTH_NAMES[last.getUTCMonth()]}`;
+  });
+
+  return parts.join(' & ');
+}
 
 interface Props {
   locations: LocationData[];
@@ -51,9 +79,8 @@ interface Props {
 }
 
 export default function StepLocation({ locations, form, updateForm, errors, bookingType, initialRegion }: Props) {
-  const [regionFilter, setRegionFilter] = useState<RegionFilter>(
-    (initialRegion === 'solihull' || initialRegion === 'birmingham') ? initialRegion : 'all'
-  );
+  const regionSlugs = [...new Set(locations.map((l) => l.region))].sort();
+  const [regionFilter, setRegionFilter] = useState<string>(initialRegion || 'all');
 
   const handleSelect = (location: LocationData) => {
     const camp = location.camps[0];
@@ -89,8 +116,8 @@ export default function StepLocation({ locations, form, updateForm, errors, book
 
       <div className="mb-6">
         <span className="text-xs font-semibold text-[#05575c]/50 uppercase tracking-wider">Region</span>
-        <div className="flex gap-2 mt-1.5">
-          {([['all', 'All'], ['solihull', 'Solihull'], ['birmingham', 'Birmingham']] as const).map(([value, label]) => (
+        <div className="flex flex-wrap gap-2 mt-1.5">
+          {[['all', 'All'], ...regionSlugs.map((s) => [s, s.charAt(0).toUpperCase() + s.slice(1)])].map(([value, label]) => (
             <button
               key={value}
               type="button"
@@ -157,7 +184,7 @@ function LocationCard({
 }) {
   const camp = location.camps[0];
   const campDays = camp?.campDays || [];
-  const imgSrc = getLocationImage(location.name);
+  const imgSrc = location.imageUrl || '/camp/location-shirley-centre.jpg';
 
   const isHaf = bookingType === 'haf';
   const accentColor = isSelected
@@ -193,7 +220,7 @@ function LocationCard({
             {typeBadge.label}
           </span>
           <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/90 text-[#003439] shadow-sm">
-            {location.region === 'solihull' ? 'Solihull' : 'Birmingham'}
+            {location.region.charAt(0).toUpperCase() + location.region.slice(1)}
           </span>
         </div>
 
@@ -213,26 +240,15 @@ function LocationCard({
         {campDays.length > 0 && (
           <div className="mt-3 flex items-start gap-1.5 text-xs text-[#05575c]/70">
             <svg className="w-3.5 h-3.5 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            <span className="leading-relaxed">
-              {campDays.map((d, i) => {
-                const date = new Date(d.date);
-                const day = DAY_NAMES[date.getUTCDay()];
-                const rest = `${ordinal(date.getUTCDate())} ${MONTH_NAMES[date.getUTCMonth()]}`;
-                return (
-                  <span key={d.id}>
-                    <span className="font-bold text-[#003439]">{day}</span> {rest}{i < campDays.length - 1 ? ', ' : ''}
-                  </span>
-                );
-              })}
+            <span className="leading-relaxed font-bold text-[#003439]">
+              {summariseCampDates(campDays)}
             </span>
           </div>
         )}
 
         {isHaf && (
           <p className="text-xs text-[#05575c]/50 mt-3 border-t border-gray-100 pt-2">
-            {location.region === 'solihull'
-              ? 'Eligible for children who live in or attend school in Solihull.'
-              : 'Eligible for children who live in or attend school in Birmingham.'}
+            Eligible for children who live in or attend school in {location.region.charAt(0).toUpperCase() + location.region.slice(1)}.
           </p>
         )}
       </div>

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import prisma from '@/lib/db';
-import { sendConfirmationEmail } from '@/lib/email';
+import { sendConfirmationEmail, addToSubscriberList } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -66,6 +66,9 @@ export async function POST(request: NextRequest) {
       if (fullBooking) {
         sendConfirmationEmail(fullBooking).catch((err) =>
           console.error('Confirmation email failed:', err)
+        );
+        addToSubscriberList(fullBooking.parentEmail, 'paid-booking').catch((err) =>
+          console.error('Auto-subscribe on paid booking failed:', err)
         );
       }
     }

@@ -33,6 +33,7 @@
     "react-hook-form": "^7.71.2",
     "stripe": "^20.4.1",
     "tsx": "^4.21.0",
+    "twilio": "^5.13.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

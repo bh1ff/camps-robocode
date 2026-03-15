@@ -28,6 +28,9 @@ import {
   Activity,
   ShieldCheck,
   ChevronRight,
+  ChevronDown,
+  Bell,
+  SlidersHorizontal,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -77,44 +80,128 @@ const NAV_LINKS = [
   { label: 'Reviews', href: '#reviews' },
 ];
 
-const LOCATIONS = [
-  {
-    name: 'Robocode Shirley Centre',
-    slug: 'shirley',
-    tag: 'Solihull',
-    address: 'The Exchange, 26 Haslucks Green Rd, Shirley, B90 2EL',
-    dates: 'Mon–Thu, 30 Mar – 2 Apr & 6–9 Apr',
-    days: '8 days',
+const LOCATION_IMAGES: Record<string, string> = {
+  'robocode centre': '/camp/location-shirley-centre.jpg',
+  'robocode shirley': '/camp/location-shirley-centre.jpg',
+  'shirley': '/camp/location-shirley-centre.jpg',
+  'solihull': '/camp/location-shirley-centre.jpg',
+  'kingshurst': '/camp/location-kingshurst.jpg',
+  'tudor grange': '/camp/location-kingshurst.jpg',
+  'birmingham city': '/camp/location-bcu.jpg',
+  'bcu': '/camp/location-bcu.jpg',
+  'curzon': '/camp/location-bcu.jpg',
+};
+
+function getLocationImage(name: string): string {
+  const lower = name.toLowerCase();
+  for (const [key, src] of Object.entries(LOCATION_IMAGES)) {
+    if (lower.includes(key)) return src;
+  }
+  return '/camp/location-shirley-centre.jpg';
+}
+
+const DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function summariseDates(dateStrings: string[]): { summary: string; totalDays: number } {
+  if (dateStrings.length === 0) return { summary: '', totalDays: 0 };
+  const dates = dateStrings
+    .map((s) => new Date(s))
+    .filter((d) => !isNaN(d.getTime()))
+    .sort((a, b) => a.getTime() - b.getTime());
+  if (dates.length === 0) return { summary: '', totalDays: 0 };
+
+  const runs: Date[][] = [];
+  let run: Date[] = [dates[0]];
+  for (let i = 1; i < dates.length; i++) {
+    const gap = Math.round((dates[i].getTime() - run[run.length - 1].getTime()) / 86400000);
+    if (gap === 1) {
+      run.push(dates[i]);
+    } else {
+      runs.push(run);
+      run = [dates[i]];
+    }
+  }
+  runs.push(run);
+
+  const groups: Date[][][] = [[runs[0]]];
+  for (let i = 1; i < runs.length; i++) {
+    const lastGroup = groups[groups.length - 1];
+    const lastRun = lastGroup[lastGroup.length - 1];
+    const gap = Math.round((runs[i][0].getTime() - lastRun[lastRun.length - 1].getTime()) / 86400000);
+    const sameLen = lastRun.length === runs[i].length;
+    const sameDow = lastRun[0].getUTCDay() === runs[i][0].getUTCDay();
+    if (gap >= 2 && gap <= 5 && sameLen && sameDow) {
+      lastGroup.push(runs[i]);
+    } else {
+      groups.push([runs[i]]);
+    }
+  }
+
+  const parts = groups.map((group) => {
+    const allDates = group.flat();
+    const first = allDates[0];
+    const last = allDates[allDates.length - 1];
+    if (allDates.length === 1) {
+      return `${DAY_SHORT[first.getUTCDay()]} ${first.getUTCDate()} ${MONTH_SHORT[first.getUTCMonth()]}`;
+    }
+    const dows = [...new Set(allDates.map((d) => d.getUTCDay()))].sort((a, b) => a - b);
+    const dowStr = dows.length === 1
+      ? DAY_SHORT[dows[0]]
+      : `${DAY_SHORT[dows[0]]}–${DAY_SHORT[dows[dows.length - 1]]}`;
+    const sameMonth = first.getUTCMonth() === last.getUTCMonth();
+    if (sameMonth) {
+      return `${dowStr}, ${first.getUTCDate()}–${last.getUTCDate()} ${MONTH_SHORT[first.getUTCMonth()]}`;
+    }
+    return `${dowStr}, ${first.getUTCDate()} ${MONTH_SHORT[first.getUTCMonth()]} – ${last.getUTCDate()} ${MONTH_SHORT[last.getUTCMonth()]}`;
+  });
+
+  return { summary: parts.join(' & '), totalDays: dates.length };
+}
+
+interface ApiLocation {
+  id: string;
+  name: string;
+  slug: string;
+  address: string;
+  region: string;
+  imageUrl: string | null;
+  camps: {
+    allowsHaf: boolean;
+    allowsPaid: boolean;
+    campDays: { id: string; date: string }[];
+  }[];
+}
+
+interface LocationDisplay {
+  name: string;
+  slug: string;
+  tag: string;
+  address: string;
+  dates: string;
+  days: string;
+  time: string;
+  haf: boolean;
+  paid: boolean;
+  img: string;
+}
+
+function toLocationDisplay(loc: ApiLocation): LocationDisplay {
+  const allDays = loc.camps.flatMap((c) => c.campDays.map((d) => d.date));
+  const { summary, totalDays } = summariseDates(allDays);
+  return {
+    name: loc.name,
+    slug: loc.slug || loc.name.toLowerCase().replace(/\s+/g, '-'),
+    tag: loc.region === 'solihull' ? 'Solihull' : loc.region === 'birmingham' ? 'Birmingham' : loc.region.charAt(0).toUpperCase() + loc.region.slice(1),
+    address: loc.address,
+    dates: summary,
+    days: `${totalDays} day${totalDays !== 1 ? 's' : ''}`,
     time: '10:00 AM – 2:00 PM',
-    haf: true,
-    paid: true,
-    img: '/camp/location-shirley-centre.jpg',
-  },
-  {
-    name: 'Tudor Grange Academy Kingshurst',
-    slug: 'kingshurst',
-    tag: 'Kingshurst',
-    address: 'Cooks Lane, Fordbridge, B37 6NU',
-    dates: 'Mon–Thu, 30 Mar – 2 Apr',
-    days: '4 days',
-    time: '10:00 AM – 2:00 PM',
-    haf: true,
-    paid: false,
-    img: '/camp/location-kingshurst.jpg',
-  },
-  {
-    name: 'Birmingham City University',
-    slug: 'bcu',
-    tag: 'Birmingham',
-    address: 'Curzon Building, 4 Cardigan St, B4 7BD',
-    dates: 'Mon–Thu, 30 Mar – 2 Apr & Tue–Thu, 7–9 Apr',
-    days: '7 days',
-    time: '10:00 AM – 2:00 PM',
-    haf: true,
-    paid: false,
-    img: '/camp/location-bcu.jpg',
-  },
-];
+    haf: loc.camps.some((c) => c.allowsHaf),
+    paid: loc.camps.some((c) => c.allowsPaid),
+    img: loc.imageUrl || getLocationImage(loc.name),
+  };
+}
 
 const TESTIMONIALS = [
   {
@@ -191,12 +278,149 @@ const MARQUEE_IMAGES = [
   '/camp/marquee-chess.jpg',
 ];
 
+/* ─── notify signup form ─── */
+const UK_REGIONS = [
+  'Bath and North East Somerset','Bedford','Birmingham','Blackburn with Darwen','Blackpool',
+  'Bolton','Bournemouth, Christchurch and Poole','Bradford','Brighton and Hove','Bristol',
+  'Buckinghamshire','Bury','Calderdale','Cambridgeshire','Central Bedfordshire',
+  'Cheshire East','Cheshire West and Chester','Cornwall','County Durham','Coventry',
+  'Cumbria','Darlington','Derby','Derbyshire','Devon','Doncaster','Dorset','Dudley',
+  'East Riding of Yorkshire','East Sussex','Essex','Gateshead','Gloucestershire',
+  'Greater Manchester','Hackney','Halton','Hampshire','Hartlepool','Herefordshire',
+  'Hertfordshire','Isle of Wight','Isles of Scilly','Kent','Kingston upon Hull',
+  'Kirklees','Knowsley','Lancashire','Leeds','Leicester','Leicestershire',
+  'Lincolnshire','Liverpool','London','Luton','Manchester','Medway',
+  'Middlesbrough','Milton Keynes','Newcastle upon Tyne','Norfolk','North East Lincolnshire',
+  'North Lincolnshire','North Somerset','North Tyneside','North Yorkshire',
+  'Northamptonshire','Northumberland','Nottingham','Nottinghamshire','Oldham','Oxfordshire',
+  'Peterborough','Plymouth','Portsmouth','Reading','Redcar and Cleveland',
+  'Rochdale','Rotherham','Rutland','Salford','Sandwell','Sefton','Sheffield',
+  'Shropshire','Slough','Solihull','Somerset','South Gloucestershire',
+  'South Tyneside','Southampton','Southend-on-Sea','St Helens','Staffordshire',
+  'Stockport','Stockton-on-Tees','Stoke-on-Trent','Suffolk','Sunderland','Surrey',
+  'Swindon','Tameside','Telford and Wrekin','Thurrock','Torbay','Trafford',
+  'Wakefield','Walsall','Warrington','Warwickshire','West Berkshire',
+  'West Sussex','Westminster','Wigan','Wiltshire','Windsor and Maidenhead',
+  'Wirral','Wokingham','Wolverhampton','Worcestershire','York',
+];
+
+function NotifyForm({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
+  const [email, setEmail] = useState('');
+  const [region, setRegion] = useState('');
+  const [regionSearch, setRegionSearch] = useState('');
+  const [showRegionPicker, setShowRegionPicker] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const filteredRegions = regionSearch
+    ? UK_REGIONS.filter((r) => r.toLowerCase().includes(regionSearch.toLowerCase()))
+    : UK_REGIONS;
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, region: region || undefined }),
+      });
+      if (res.ok) { setStatus('success'); setEmail(''); setRegion(''); }
+      else setStatus('error');
+    } catch { setStatus('error'); }
+  };
+
+  if (status === 'success') {
+    return (
+      <div className={`flex items-center gap-2 text-sm font-semibold ${variant === 'dark' ? 'text-cyan' : 'text-emerald-600'}`}>
+        <Bell size={16} />
+        You&apos;re on the list! We&apos;ll let you know when bookings open.
+      </div>
+    );
+  }
+
+  const isDark = variant === 'dark';
+  return (
+    <form onSubmit={submit} className="flex flex-col gap-2 w-full max-w-md">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          required
+          className={`flex-1 px-4 py-3 rounded-full text-sm outline-none transition-colors ${
+            isDark
+              ? 'bg-white/10 text-white placeholder:text-white/40 border border-white/20 focus:border-cyan'
+              : 'bg-gray-100 text-dark placeholder:text-dark/40 border border-dark/10 focus:border-cyan'
+          }`}
+        />
+        <button
+          type="submit"
+          disabled={status === 'loading'}
+          className="px-6 py-3 bg-cyan text-dark font-bold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors disabled:opacity-60 whitespace-nowrap"
+        >
+          {status === 'loading' ? 'Subscribing...' : 'Notify Me'}
+        </button>
+      </div>
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setShowRegionPicker(!showRegionPicker)}
+          className={`w-full px-4 py-2.5 rounded-full text-sm text-left transition-colors ${
+            isDark
+              ? `bg-white/10 border border-white/20 ${region ? 'text-white' : 'text-white/40'}`
+              : `bg-gray-100 border border-dark/10 ${region ? 'text-dark' : 'text-dark/40'}`
+          }`}
+        >
+          {region || 'Select your region (optional)'}
+        </button>
+        {showRegionPicker && (
+          <div className="absolute z-30 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+            <div className="p-2">
+              <input
+                type="text"
+                value={regionSearch}
+                onChange={(e) => setRegionSearch(e.target.value)}
+                placeholder="Search regions..."
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-[#003439]/20"
+                autoFocus
+              />
+            </div>
+            <div className="max-h-48 overflow-y-auto">
+              {filteredRegions.map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  onClick={() => { setRegion(r); setShowRegionPicker(false); setRegionSearch(''); }}
+                  className={`w-full px-4 py-2 text-sm text-left text-dark hover:bg-gray-50 transition-colors ${region === r ? 'bg-[#edfffe] font-semibold' : ''}`}
+                >
+                  {r}
+                </button>
+              ))}
+              {filteredRegions.length === 0 && (
+                <p className="px-4 py-2 text-sm text-gray-400">No regions found</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      {status === 'error' && <p className="text-red-400 text-xs mt-1 sm:hidden">Something went wrong. Try again.</p>}
+    </form>
+  );
+}
+
 /* ─── page ─── */
 export default function CampsPage() {
   useLenis();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pricingRows, setPricingRows] = useState<PricingRow[]>(FALLBACK_PRICING);
   const [seasonTitle, setSeasonTitle] = useState('');
+  const [seasonEndDate, setSeasonEndDate] = useState<string | null>(null);
+  const [locations, setLocations] = useState<LocationDisplay[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({
     target: heroRef,
@@ -216,9 +440,29 @@ export default function CampsPage() {
       .catch(() => {});
     fetch('/api/season')
       .then((r) => r.json())
-      .then((s: { title: string }) => { if (s?.title) setSeasonTitle(s.title); })
+      .then((s: { title: string; endDate?: string | null }) => {
+        if (s?.title) setSeasonTitle(s.title);
+        if (s?.endDate) setSeasonEndDate(s.endDate);
+      })
       .catch(() => {});
+    fetch('/api/locations')
+      .then((r) => r.json())
+      .then((locs: ApiLocation[]) => {
+        if (Array.isArray(locs)) setLocations(locs.map(toLocationDisplay));
+      })
+      .catch(() => {})
+      .finally(() => setDataLoaded(true));
   }, []);
+
+  const seasonExpired = Boolean(seasonEndDate && new Date(seasonEndDate) < new Date());
+
+  const regionOptions = Array.from(new Set(locations.map((l) => l.tag))).sort();
+  const filteredLocations = locations.filter((loc) => {
+    if (regionFilter !== 'all' && loc.tag !== regionFilter) return false;
+    if (typeFilter === 'haf' && !loc.haf) return false;
+    if (typeFilter === 'paid' && !loc.paid) return false;
+    return true;
+  });
 
   return (
     <>
@@ -264,22 +508,33 @@ export default function CampsPage() {
                 Robotics, coding, 3D printing and more for <span className="whitespace-nowrap">ages 6–17.</span>
               </p>
 
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
-                <Link
-                  href="/book/haf"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan text-dark font-bold rounded-full text-base tracking-wide hover:bg-cyan-light transition-colors shadow-lg shadow-cyan/20"
-                >
-                  Book Free Place (HAF)
-                  <ArrowRight size={18} />
-                </Link>
-                <Link
-                  href="/book/paid"
-                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-pink text-white font-bold rounded-full text-base tracking-wide hover:bg-pink-light transition-colors shadow-lg shadow-pink/20"
-                >
-                  Book Paid Camp
-                  <ArrowRight size={18} />
-                </Link>
-              </div>
+              {dataLoaded && seasonExpired ? (
+                <div className="mt-8">
+                  <p className="text-white/70 text-sm mb-4">
+                    {seasonTitle
+                      ? `${seasonTitle} has ended. Join our mailing list to hear about the next camp!`
+                      : 'Our next camp is coming soon. Sign up to be the first to know!'}
+                  </p>
+                  <NotifyForm variant="dark" />
+                </div>
+              ) : (
+                <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <Link
+                    href="/book/haf"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan text-dark font-bold rounded-full text-base tracking-wide hover:bg-cyan-light transition-colors shadow-lg shadow-cyan/20"
+                  >
+                    Book Free Place (HAF)
+                    <ArrowRight size={18} />
+                  </Link>
+                  <Link
+                    href="/book/paid"
+                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-pink text-white font-bold rounded-full text-base tracking-wide hover:bg-pink-light transition-colors shadow-lg shadow-pink/20"
+                  >
+                    Book Paid Camp
+                    <ArrowRight size={18} />
+                  </Link>
+                </div>
+              )}
 
               <p className="mt-10 text-[13px] text-white/50 tracking-wide font-[var(--font-body)] uppercase font-bold">
                 <span className="text-cyan">Ofsted Registered</span> &nbsp;·&nbsp; <span className="text-pink-light">22,000+ Students</span>
@@ -353,12 +608,18 @@ export default function CampsPage() {
                 engineering, and finish the day with something they built
                 themselves.
               </p>
-              <Link
-                href="/book/haf"
-                className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-cyan/10 text-dark font-bold text-sm rounded-full border-2 border-cyan/30 hover:bg-cyan/20 hover:border-cyan/50 transition-all"
-              >
-                Book a place <ArrowRight size={16} />
-              </Link>
+              {seasonExpired ? (
+                <span className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-400 font-bold text-sm rounded-full border-2 border-gray-200 cursor-not-allowed">
+                  Bookings closed
+                </span>
+              ) : (
+                <Link
+                  href="/book/haf"
+                  className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-cyan/10 text-dark font-bold text-sm rounded-full border-2 border-cyan/30 hover:bg-cyan/20 hover:border-cyan/50 transition-all"
+                >
+                  Book a place <ArrowRight size={16} />
+                </Link>
+              )}
             </Reveal>
 
             <Reveal delay={0.15}>
@@ -463,18 +724,32 @@ export default function CampsPage() {
 
             <Reveal className="mt-12">
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  href="/book/haf"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                >
-                  Book Free Place (HAF) <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/book/paid"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
-                >
-                  Book Paid Camp <ArrowRight size={16} />
-                </Link>
+                {seasonExpired ? (
+                  <>
+                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
+                      Book Free Place (HAF)
+                    </span>
+                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
+                      Book Paid Camp
+                    </span>
+                    <span className="text-xs text-dark/40 font-medium italic">Bookings closed — sign up above to be notified</span>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                    >
+                      Book Free Place (HAF) <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      href="/book/paid"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                    >
+                      Book Paid Camp <ArrowRight size={16} />
+                    </Link>
+                  </>
+                )}
               </div>
             </Reveal>
           </div>
@@ -546,23 +821,36 @@ export default function CampsPage() {
         <section className="bg-surface">
           <div className="max-w-3xl mx-auto px-6 py-14 text-center">
             <Reveal>
-              <p className="text-dark-mid/70 text-sm leading-relaxed">
-                Spaces fill up fast. Secure your child&apos;s place for {seasonTitle || 'camp'} today.
-              </p>
-              <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <Link
-                  href="/book/haf"
-                  className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                >
-                  Book Free Place (HAF) <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/book/paid"
-                  className="inline-flex items-center gap-2 px-7 py-3 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
-                >
-                  Book Paid Camp <ArrowRight size={16} />
-                </Link>
-              </div>
+              {dataLoaded && seasonExpired ? (
+                <>
+                  <p className="text-dark-mid/70 text-sm leading-relaxed">
+                    Our next camp is on the way. Be the first to know when bookings open.
+                  </p>
+                  <div className="mt-5 flex justify-center">
+                    <NotifyForm variant="light" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-dark-mid/70 text-sm leading-relaxed">
+                    Spaces fill up fast. Secure your child&apos;s place for {seasonTitle || 'camp'} today.
+                  </p>
+                  <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                    >
+                      Book Free Place (HAF) <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      href="/book/paid"
+                      className="inline-flex items-center gap-2 px-7 py-3 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                    >
+                      Book Paid Camp <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </>
+              )}
             </Reveal>
           </div>
         </section>
@@ -575,7 +863,7 @@ export default function CampsPage() {
                 Locations
               </p>
               <h2 className="mt-3 font-[var(--font-display)] text-3xl md:text-4xl text-dark uppercase">
-                Three venues across the region
+                Our venues
               </h2>
             </Reveal>
 
@@ -584,12 +872,62 @@ export default function CampsPage() {
                 <strong className="text-dark text-base">HAF eligibility:</strong>{' '}
                 Free places are funded by the Holiday Activities & Food programme.
                 Children must live or attend school in the relevant council
-                area (Solihull or Birmingham). A valid HAF code is required at booking.
+                area ({regionOptions.length > 0 ? regionOptions.join(' or ') : 'your local council area'}). A valid HAF code is required at booking.
               </div>
             </Reveal>
 
-            <div className="mt-8 space-y-6">
-              {LOCATIONS.map((loc, i) => (
+            {locations.length > 1 && (
+              <Reveal className="mt-8">
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-semibold text-dark/40 uppercase tracking-wider flex items-center gap-1.5">
+                    <SlidersHorizontal size={13} /> Filter
+                  </span>
+
+                  <div className="relative">
+                    <select
+                      value={regionFilter}
+                      onChange={(e) => setRegionFilter(e.target.value)}
+                      className="appearance-none bg-white border border-dark/10 rounded-full pl-4 pr-9 py-2 text-sm font-medium text-dark cursor-pointer hover:border-cyan/50 focus:border-cyan focus:ring-2 focus:ring-cyan/20 outline-none transition-all"
+                    >
+                      <option value="all">All regions</option>
+                      {regionOptions.map((r) => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark/30 pointer-events-none" />
+                  </div>
+
+                  <div className="relative">
+                    <select
+                      value={typeFilter}
+                      onChange={(e) => setTypeFilter(e.target.value)}
+                      className="appearance-none bg-white border border-dark/10 rounded-full pl-4 pr-9 py-2 text-sm font-medium text-dark cursor-pointer hover:border-cyan/50 focus:border-cyan focus:ring-2 focus:ring-cyan/20 outline-none transition-all"
+                    >
+                      <option value="all">All types</option>
+                      <option value="haf">HAF Free</option>
+                      <option value="paid">Paid</option>
+                    </select>
+                    <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark/30 pointer-events-none" />
+                  </div>
+
+                  {(regionFilter !== 'all' || typeFilter !== 'all') && (
+                    <button
+                      onClick={() => { setRegionFilter('all'); setTypeFilter('all'); }}
+                      className="text-xs font-semibold text-cyan hover:text-cyan-light transition-colors"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+
+                  <span className="ml-auto text-xs text-dark/30 font-medium">
+                    {filteredLocations.length} of {locations.length} venue{locations.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </Reveal>
+            )}
+
+            <div className={`${locations.length > 1 ? 'mt-5' : 'mt-8'} space-y-6`}>
+              {filteredLocations.length > 0 ? filteredLocations.map((loc, i) => (
                 <Reveal key={loc.name} delay={i * 0.1}>
                   <div className="grid md:grid-cols-[2fr_3fr] gap-0 border-2 border-dark/10 rounded-2xl overflow-hidden hover:border-cyan/40 transition-colors shadow-sm hover:shadow-md">
                     <div className="relative aspect-[4/3] md:aspect-auto min-h-[220px]">
@@ -627,7 +965,7 @@ export default function CampsPage() {
                           <MapPin size={16} className="text-cyan shrink-0" />
                           {loc.address}
                         </p>
-                        <p className="flex items-center gap-2.5 font-medium">
+                        <p className="flex items-center gap-2.5 font-bold">
                           <Calendar size={16} className="text-pink shrink-0" />
                           {loc.dates}
                         </p>
@@ -637,28 +975,81 @@ export default function CampsPage() {
                         </p>
                       </div>
 
-                      <div className="mt-6 flex flex-wrap gap-2">
-                        {loc.haf && (
-                          <Link
-                            href={`/book/haf?location=${loc.slug}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-full hover:bg-emerald-600 transition-colors"
-                          >
-                            Book Free (HAF) <ChevronRight size={14} />
-                          </Link>
-                        )}
-                        {loc.paid && (
-                          <Link
-                            href={`/book/paid?location=${loc.slug}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink text-white text-sm font-bold rounded-full hover:bg-pink-light transition-colors"
-                          >
-                            Book Paid <ChevronRight size={14} />
-                          </Link>
+                      <div className="mt-6 flex flex-wrap items-center gap-2">
+                        {seasonExpired ? (
+                          <>
+                            {loc.haf && (
+                              <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 text-sm font-bold rounded-full cursor-not-allowed">
+                                Book Free (HAF)
+                              </span>
+                            )}
+                            {loc.paid && (
+                              <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 text-sm font-bold rounded-full cursor-not-allowed">
+                                Book Paid
+                              </span>
+                            )}
+                            <span className="text-xs text-dark/40 font-medium italic">Bookings closed</span>
+                          </>
+                        ) : (
+                          <>
+                            {loc.haf && (
+                              <Link
+                                href={`/book/haf?location=${loc.slug}`}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-full hover:bg-emerald-600 transition-colors"
+                              >
+                                Book Free (HAF) <ChevronRight size={14} />
+                              </Link>
+                            )}
+                            {loc.paid && (
+                              <Link
+                                href={`/book/paid?location=${loc.slug}`}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink text-white text-sm font-bold rounded-full hover:bg-pink-light transition-colors"
+                              >
+                                Book Paid <ChevronRight size={14} />
+                              </Link>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
                   </div>
                 </Reveal>
-              ))}
+              )) : dataLoaded ? (
+                <Reveal>
+                  {locations.length > 0 && filteredLocations.length === 0 ? (
+                    <div className="border-2 border-dashed border-dark/10 rounded-2xl p-10 text-center">
+                      <SlidersHorizontal size={32} className="mx-auto text-dark/15 mb-3" />
+                      <h3 className="font-[var(--font-body)] text-lg font-bold text-dark mb-1">
+                        No venues match your filters
+                      </h3>
+                      <p className="text-dark/50 text-sm mb-4">
+                        Try a different region or booking type.
+                      </p>
+                      <button
+                        onClick={() => { setRegionFilter('all'); setTypeFilter('all'); }}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-cyan text-dark text-sm font-bold rounded-full hover:bg-cyan-light transition-colors"
+                      >
+                        Show all venues
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="border-2 border-dashed border-dark/10 rounded-2xl p-10 md:p-14 text-center">
+                      <Calendar size={40} className="mx-auto text-dark/15 mb-4" />
+                      <h3 className="font-[var(--font-body)] text-xl font-bold text-dark mb-2">
+                        {seasonExpired ? 'No active camps right now' : 'Venues coming soon'}
+                      </h3>
+                      <p className="text-dark/60 text-sm max-w-md mx-auto mb-6">
+                        {seasonExpired
+                          ? `${seasonTitle || 'Our last camp'} has ended. We're working on the next one! Sign up to get notified when new dates are announced.`
+                          : `We're finalising venues for ${seasonTitle || 'our next camp'}. Check back soon or sign up for updates.`}
+                      </p>
+                      <div className="flex justify-center">
+                        <NotifyForm variant="light" />
+                      </div>
+                    </div>
+                  )}
+                </Reveal>
+              ) : null}
             </div>
 
           </div>
@@ -668,17 +1059,30 @@ export default function CampsPage() {
         <section className="bg-gradient-to-r from-dark via-dark-mid to-dark">
           <div className="max-w-3xl mx-auto px-6 py-12 text-center">
             <Reveal>
-              <p className="text-white/70 text-sm">
-                Not sure which location? All HAF places are completely free.
-              </p>
-              <div className="mt-4">
-                <Link
-                  href="/book/haf"
-                  className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                >
-                  Check Eligibility & Book <ArrowRight size={16} />
-                </Link>
-              </div>
+              {dataLoaded && seasonExpired ? (
+                <>
+                  <p className="text-white/70 text-sm">
+                    Don&apos;t miss the next camp. Get notified as soon as bookings open.
+                  </p>
+                  <div className="mt-4 flex justify-center">
+                    <NotifyForm variant="dark" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-white/70 text-sm">
+                    Not sure which location? All HAF places are completely free.
+                  </p>
+                  <div className="mt-4">
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                    >
+                      Check Eligibility & Book <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </>
+              )}
             </Reveal>
           </div>
         </section>
@@ -758,12 +1162,18 @@ export default function CampsPage() {
               </p>
 
               <div className="mt-6 text-center">
-                <Link
-                  href="/book/paid"
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-pink text-white font-semibold rounded-full text-sm hover:bg-pink-light transition-colors"
-                >
-                  Book Paid Camp <ArrowRight size={16} />
-                </Link>
+                {seasonExpired ? (
+                  <span className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm cursor-not-allowed">
+                    Bookings closed
+                  </span>
+                ) : (
+                  <Link
+                    href="/book/paid"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-pink text-white font-semibold rounded-full text-sm hover:bg-pink-light transition-colors"
+                  >
+                    Book Paid Camp <ArrowRight size={16} />
+                  </Link>
+                )}
               </div>
             </Reveal>
           </div>
@@ -845,25 +1255,43 @@ export default function CampsPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-dark/85 via-dark-mid/70 to-pink/20" />
           <div className="relative z-10 text-center px-6">
             <Reveal>
-              <h2 className="font-[var(--font-display)] text-3xl md:text-5xl text-white uppercase leading-tight">
-                Book their place for
-                <br />
-                <span className="bg-gradient-to-r from-cyan via-pink-light to-orange bg-clip-text text-transparent">{seasonTitle || 'Holiday Camp'}</span>
-              </h2>
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/book/haf"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                >
-                  Book Free Place (HAF) <ArrowRight size={16} />
-                </Link>
-                <Link
-                  href="/book/paid"
-                  className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
-                >
-                  Book Paid Camp <ArrowRight size={16} />
-                </Link>
-              </div>
+              {seasonExpired ? (
+                <>
+                  <h2 className="font-[var(--font-display)] text-3xl md:text-5xl text-white uppercase leading-tight">
+                    Don&apos;t miss the
+                    <br />
+                    <span className="bg-gradient-to-r from-cyan via-pink-light to-orange bg-clip-text text-transparent">next camp</span>
+                  </h2>
+                  <p className="mt-4 text-white/60 text-sm max-w-md mx-auto">
+                    Get notified as soon as we announce new dates and open bookings.
+                  </p>
+                  <div className="mt-6 flex justify-center">
+                    <NotifyForm variant="dark" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="font-[var(--font-display)] text-3xl md:text-5xl text-white uppercase leading-tight">
+                    Book their place for
+                    <br />
+                    <span className="bg-gradient-to-r from-cyan via-pink-light to-orange bg-clip-text text-transparent">{seasonTitle || 'Holiday Camp'}</span>
+                  </h2>
+                  <div className="mt-8 flex flex-wrap justify-center gap-4">
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                    >
+                      Book Free Place (HAF) <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      href="/book/paid"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                    >
+                      Book Paid Camp <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </>
+              )}
             </Reveal>
           </div>
         </section>

@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
         region: data.region,
         capacityPerDay: parseInt(data.capacityPerDay) || 30,
         hafSeatsTotal: parseInt(data.hafSeatsTotal) || 100,
+        imageUrl: data.imageUrl || null,
         allowsPaid: data.allowsPaid ?? false,
         stripeSecretKey: data.stripeSecretKey || null,
         stripePublishableKey: data.stripePublishableKey || null,

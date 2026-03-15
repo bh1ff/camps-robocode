@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { hafBookingSchema, paidBookingSchema } from '@/lib/validation';
-import { sendConfirmationEmail } from '@/lib/email';
+import { sendConfirmationEmail, addToSubscriberList } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
@@ -121,6 +121,10 @@ export async function POST(request: NextRequest) {
         );
       }
     }
+
+    addToSubscriberList(data.parentEmail, isHaf ? 'haf-booking' : 'paid-booking').catch((err) =>
+      console.error('Auto-subscribe failed:', err)
+    );
 
     return NextResponse.json({ success: true, booking });
   } catch (error) {

@@ -4,8 +4,8 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  LayoutDashboard, MapPin, CalendarDays, Tent, ClipboardList,
-  Users, Settings, LogOut, Menu, X, ChevronRight,
+  LayoutDashboard, MapPin, CalendarDays, ClipboardList,
+  Users, LogOut, Menu, X, ChevronRight, Mail, Globe,
 } from 'lucide-react';
 
 interface AdminUser {
@@ -21,11 +21,10 @@ export const useAdmin = () => useContext(AdminContext);
 const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/seasons', label: 'Seasons', icon: CalendarDays },
-  { href: '/admin/locations', label: 'Locations', icon: MapPin },
-  { href: '/admin/camps', label: 'Camps', icon: Tent },
+  { href: '/admin/regions', label: 'Regions', icon: Globe },
   { href: '/admin/bookings', label: 'Bookings', icon: ClipboardList },
+  { href: '/admin/subscribers', label: 'Subscribers', icon: Mail },
   { href: '/admin/staff', label: 'Staff', icon: Users, superadminOnly: true },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {

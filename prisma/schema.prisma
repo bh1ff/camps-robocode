@@ -44,6 +44,7 @@ model Location {
   slug                 String   @default("")
   address              String   @default("")
   region               String
+  imageUrl             String?
   capacityPerDay       Int
   hafSeatsTotal        Int
   allowsPaid           Boolean  @default(false)
@@ -74,11 +75,12 @@ model Camp {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  groups   Group[]
-  areas    Area[]
-  sessions Session[]
-  campDays CampDay[]
-  bookings Booking[]
+  groups        Group[]
+  areas         Area[]
+  sessions      Session[]
+  campDays      CampDay[]
+  bookings      Booking[]
+  bookingTokens BookingToken[]
 }
 
 model CampDay {
@@ -96,6 +98,7 @@ model Booking {
   id                  String   @id @default(cuid())
   type                String   // "haf" | "paid"
   status              String   @default("pending")
+  paymentMethod       String   @default("stripe")
 
   parentFirstName     String
   parentLastName      String
@@ -117,6 +120,20 @@ model Booking {
 
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+}
+
+model BookingToken {
+  id            String    @id @default(cuid())
+  token         String    @unique
+  campId        String
+  camp          Camp      @relation(fields: [campId], references: [id], onDelete: Cascade)
+  paymentMethod String
+  parentEmail   String
+  parentPhone   String?
+  sendMethod    String    @default("email")
+  used          Boolean   @default(false)
+  expiresAt     DateTime?
+  createdAt     DateTime  @default(now())
 }
 
 model Area {
@@ -221,4 +238,19 @@ model Attendance {
   session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@unique([childId, sessionId])
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  source    String   @default("website")
+  region    String?
+  createdAt DateTime @default(now())
+}
+
+model Region {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
 }

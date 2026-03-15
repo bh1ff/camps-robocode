@@ -19,6 +19,7 @@ export interface LocationData {
   slug: string;
   address: string;
   region: string;
+  imageUrl: string | null;
   capacityPerDay: number;
   hafSeatsTotal: number;
   allowsPaid: boolean;
@@ -110,6 +111,7 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
   const [showChangeOptions, setShowChangeOptions] = useState(false);
   const [priceTiers, setPriceTiers] = useState<PriceTierData[]>([]);
   const [seasonTitle, setSeasonTitle] = useState('');
+  const [seasonExpired, setSeasonExpired] = useState(false);
   const router = useRouter();
 
   const [form, setForm] = useState<BookingFormState>({
@@ -137,17 +139,21 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
 
     fetch('/api/season')
       .then((r) => r.json())
-      .then((s: { title: string }) => { if (s?.title) setSeasonTitle(s.title); })
+      .then((s: { title: string; endDate?: string | null }) => {
+        if (s?.title) setSeasonTitle(s.title);
+        if (s?.endDate && new Date(s.endDate) < new Date()) setSeasonExpired(true);
+      })
       .catch(() => {});
 
     fetch('/api/locations')
       .then((res) => res.json())
       .then((data) => {
-        setLocations(data);
+        const locs = Array.isArray(data) ? data : [];
+        setLocations(locs);
 
-        if (preselectedSlug) {
+        if (preselectedSlug && locs.length > 0) {
           const nameHint = SLUG_NAME_MAP[preselectedSlug] || preselectedSlug;
-          const match = data.find((l: LocationData) =>
+          const match = locs.find((l: LocationData) =>
             l.slug === preselectedSlug || l.name.toLowerCase().includes(nameHint)
           );
           if (match && match.camps.length > 0) {
@@ -350,6 +356,33 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f0f7f7]">
         <div className="w-12 h-12 border-4 border-[#00dcde] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (seasonExpired) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f0f7f7] p-4">
+        <div className="bg-white rounded-2xl shadow-lg shadow-[#003439]/5 border border-[#003439]/5 p-8 max-w-lg w-full text-center">
+          <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+            <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-heading text-[#003439] mb-3">BOOKINGS CLOSED</h2>
+          <p className="text-[#05575c] mb-2">
+            {seasonTitle ? `${seasonTitle} has ended.` : 'This camp has ended.'}
+          </p>
+          <p className="text-sm text-[#05575c]/70 mb-6">
+            We&apos;re working on our next camp. Sign up on the homepage to be notified when bookings open.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-[#00adb3] to-[#00d4db] hover:from-[#00c4ca] hover:to-[#00e5ec] shadow-md shadow-[#00adb3]/20 transition-all"
+          >
+            Back to Homepage
+          </Link>
+        </div>
       </div>
     );
   }

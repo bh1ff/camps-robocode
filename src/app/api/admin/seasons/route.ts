@@ -6,7 +6,7 @@ export async function GET() {
     const seasons = await prisma.season.findMany({
       orderBy: { startDate: 'desc' },
       include: {
-        camps: { include: { location: true, _count: { select: { bookings: true } } } },
+        camps: { include: { location: true, campDays: { orderBy: { date: 'asc' }, select: { id: true, date: true, dayLabel: true, weekNumber: true } }, _count: { select: { bookings: true } } } },
         priceTiers: { orderBy: { order: 'asc' } },
       },
     });
@@ -22,13 +22,21 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     const slug = data.slug || data.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
+    const isActive = data.active ?? true;
+    if (isActive) {
+      await prisma.season.updateMany({
+        where: {},
+        data: { active: false },
+      });
+    }
+
     const season = await prisma.season.create({
       data: {
         title: data.title,
         slug,
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
-        active: data.active ?? true,
+        active: isActive,
       },
     });
 

@@ -1,20 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+interface RegionOption {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 interface Props {
   onConfirm: (region: string) => void;
 }
 
-const REGIONS = [
-  { value: 'solihull', label: 'Solihull', desc: 'Shirley, Kingshurst and surrounding areas' },
-  { value: 'birmingham', label: 'Birmingham', desc: 'Birmingham City Centre and surrounding areas' },
-];
-
 export default function StepHafGate({ onConfirm }: Props) {
   const [hasCode, setHasCode] = useState<boolean | null>(null);
   const [selectedRegion, setSelectedRegion] = useState('');
+  const [regions, setRegions] = useState<RegionOption[]>([]);
+
+  useEffect(() => {
+    fetch('/api/regions')
+      .then((r) => r.json())
+      .then((data) => { if (Array.isArray(data)) setRegions(data); })
+      .catch(() => {});
+  }, []);
 
   return (
     <div>
@@ -68,29 +77,29 @@ export default function StepHafGate({ onConfirm }: Props) {
             </p>
 
             <div className="space-y-2.5">
-              {REGIONS.map((r) => (
+              {regions.map((r) => (
                 <button
-                  key={r.value}
+                  key={r.slug}
                   type="button"
-                  onClick={() => setSelectedRegion(r.value)}
+                  onClick={() => setSelectedRegion(r.slug)}
                   className={`w-full flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
-                    selectedRegion === r.value
+                    selectedRegion === r.slug
                       ? 'border-emerald-500 bg-emerald-50/50 shadow-md ring-2 ring-emerald-500/20'
                       : 'border-gray-200 bg-white hover:border-emerald-400/40 hover:shadow-sm'
                   }`}
                 >
                   <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    selectedRegion === r.value ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
+                    selectedRegion === r.slug ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
                   }`}>
-                    {selectedRegion === r.value && (
+                    {selectedRegion === r.slug && (
                       <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                       </svg>
                     )}
                   </div>
                   <div>
-                    <p className="font-bold text-[#003439] text-sm">{r.label}</p>
-                    <p className="text-xs text-[#05575c]/50">{r.desc}</p>
+                    <p className="font-bold text-[#003439] text-sm">{r.name}</p>
+                    <p className="text-xs text-[#05575c]/50">{r.name} and surrounding areas</p>
                   </div>
                 </button>
               ))}

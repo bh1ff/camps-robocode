@@ -28,7 +28,7 @@ export async function GET() {
     return NextResponse.json(filtered);
   } catch (error) {
     console.error('Get locations error:', error);
-    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+    return NextResponse.json([]);
   }
 }
 
