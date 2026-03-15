@@ -6,6 +6,7 @@ import { Trash2, Download, Mail } from 'lucide-react';
 interface Subscriber {
   id: string;
   email: string;
+  phone: string | null;
   source: string;
   region: string | null;
   createdAt: string;
@@ -41,9 +42,9 @@ export default function SubscribersPage() {
   };
 
   const exportCsv = () => {
-    const header = 'Email,Source,Region,Date\n';
+    const header = 'Email,Phone,Source,Region,Date\n';
     const rows = filtered
-      .map((s) => `${s.email},${s.source},${s.region || ''},${new Date(s.createdAt).toLocaleDateString()}`)
+      .map((s) => `${s.email},${s.phone || ''},${s.source},${s.region || ''},${new Date(s.createdAt).toLocaleDateString()}`)
       .join('\n');
     const blob = new Blob([header + rows], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -111,6 +112,7 @@ export default function SubscribersPage() {
             <thead>
               <tr className="border-b border-gray-50 text-xs text-[#05575c]/40 uppercase tracking-wider">
                 <th className="text-left px-5 py-3 font-semibold">Email</th>
+                <th className="text-left px-5 py-3 font-semibold">Phone</th>
                 <th className="text-left px-5 py-3 font-semibold">Region</th>
                 <th className="text-left px-5 py-3 font-semibold">Source</th>
                 <th className="text-left px-5 py-3 font-semibold">Date</th>
@@ -121,6 +123,7 @@ export default function SubscribersPage() {
               {filtered.map((s) => (
                 <tr key={s.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50 transition-colors">
                   <td className="px-5 py-3 font-medium text-[#003439]">{s.email}</td>
+                  <td className="px-5 py-3 text-[#05575c]/60">{s.phone || <span className="text-[#05575c]/25">—</span>}</td>
                   <td className="px-5 py-3 text-[#05575c]/60">{s.region || <span className="text-[#05575c]/25">—</span>}</td>
                   <td className="px-5 py-3 text-[#05575c]/60 capitalize">{s.source}</td>
                   <td className="px-5 py-3 text-[#05575c]/60">

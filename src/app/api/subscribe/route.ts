@@ -6,20 +6,21 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, region } = await request.json();
+    const { email, region, phone } = await request.json();
 
     if (!email || !EMAIL_RE.test(email)) {
       return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 });
     }
 
     const normalised = email.trim().toLowerCase();
+    const phoneValue = typeof phone === 'string' && phone.trim() ? phone.trim() : null;
 
     const existing = await prisma.subscriber.findUnique({ where: { email: normalised } });
 
     await prisma.subscriber.upsert({
       where: { email: normalised },
-      update: region ? { region } : {},
-      create: { email: normalised, source: 'website', region: region || null },
+      update: { ...(region && { region }), ...(phoneValue !== null && { phone: phoneValue }) },
+      create: { email: normalised, source: 'website', region: region || null, phone: phoneValue },
     });
 
     if (!existing) {

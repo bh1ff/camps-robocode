@@ -23,14 +23,17 @@ import {
   Instagram,
   Facebook,
   Youtube,
+  Linkedin,
   Utensils,
   Wrench,
   Activity,
   ShieldCheck,
   ChevronRight,
   ChevronDown,
+  ChevronUp,
   Bell,
   SlidersHorizontal,
+  Star,
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -74,9 +77,9 @@ function Reveal({
 
 /* ─── data ─── */
 const NAV_LINKS = [
-  { label: 'What to Expect', href: '#activities' },
   { label: 'Locations', href: '#locations' },
   { label: 'Pricing', href: '#pricing' },
+  { label: 'What to Expect', href: '#activities' },
   { label: 'Reviews', href: '#reviews' },
 ];
 
@@ -305,7 +308,9 @@ const UK_REGIONS = [
 ];
 
 function NotifyForm({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
+  const [open, setOpen] = useState(false);
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [region, setRegion] = useState('');
   const [regionSearch, setRegionSearch] = useState('');
   const [showRegionPicker, setShowRegionPicker] = useState(false);
@@ -323,9 +328,9 @@ function NotifyForm({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
       const res = await fetch('/api/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, region: region || undefined }),
+        body: JSON.stringify({ email, phone: phone || undefined, region: region || undefined }),
       });
-      if (res.ok) { setStatus('success'); setEmail(''); setRegion(''); }
+      if (res.ok) { setStatus('success'); setEmail(''); setPhone(''); setRegion(''); }
       else setStatus('error');
     } catch { setStatus('error'); }
   };
@@ -341,72 +346,119 @@ function NotifyForm({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
 
   const isDark = variant === 'dark';
   return (
-    <form onSubmit={submit} className="flex flex-col gap-2 w-full max-w-md">
-      <div className="flex flex-col sm:flex-row gap-2">
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-          required
-          className={`flex-1 px-4 py-3 rounded-full text-sm outline-none transition-colors ${
-            isDark
-              ? 'bg-white/10 text-white placeholder:text-white/40 border border-white/20 focus:border-cyan'
-              : 'bg-gray-100 text-dark placeholder:text-dark/40 border border-dark/10 focus:border-cyan'
-          }`}
-        />
-        <button
-          type="submit"
-          disabled={status === 'loading'}
-          className="px-6 py-3 bg-cyan text-dark font-bold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors disabled:opacity-60 whitespace-nowrap"
-        >
-          {status === 'loading' ? 'Subscribing...' : 'Notify Me'}
-        </button>
-      </div>
-      <div className="relative">
-        <button
-          type="button"
-          onClick={() => setShowRegionPicker(!showRegionPicker)}
-          className={`w-full px-4 py-2.5 rounded-full text-sm text-left transition-colors ${
-            isDark
-              ? `bg-white/10 border border-white/20 ${region ? 'text-white' : 'text-white/40'}`
-              : `bg-gray-100 border border-dark/10 ${region ? 'text-dark' : 'text-dark/40'}`
-          }`}
-        >
-          {region || 'Select your region (optional)'}
-        </button>
-        {showRegionPicker && (
-          <div className="absolute z-30 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="p-2">
-              <input
-                type="text"
-                value={regionSearch}
-                onChange={(e) => setRegionSearch(e.target.value)}
-                placeholder="Search regions..."
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-[#003439]/20"
-                autoFocus
-              />
-            </div>
-            <div className="max-h-48 overflow-y-auto">
-              {filteredRegions.map((r) => (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="px-6 py-3 bg-cyan text-dark font-bold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors whitespace-nowrap"
+      >
+        <Bell size={14} className="inline mr-1.5 -mt-0.5" />
+        Notify Me
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-dark/60 backdrop-blur-sm px-4"
+            onClick={() => setOpen(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ duration: 0.25 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="absolute top-4 right-4 text-dark/30 hover:text-dark transition-colors"
+                aria-label="Close"
+              >
+                <X size={20} />
+              </button>
+
+              <h3 className="font-[var(--font-display)] text-xl text-dark uppercase">
+                Get Notified
+              </h3>
+              <p className="mt-2 text-dark/60 text-sm">
+                Be the first to know when we announce new camp dates and open bookings.
+              </p>
+
+              <form onSubmit={submit} className="mt-6 flex flex-col gap-3">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email address *"
+                  required
+                  className="w-full px-4 py-3 rounded-xl text-sm text-dark border border-dark/15 focus:border-cyan focus:ring-2 focus:ring-cyan/20 outline-none"
+                />
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Phone number (optional)"
+                  className="w-full px-4 py-3 rounded-xl text-sm text-dark border border-dark/15 focus:border-cyan focus:ring-2 focus:ring-cyan/20 outline-none"
+                />
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setShowRegionPicker(!showRegionPicker)}
+                    className={`w-full px-4 py-3 rounded-xl text-sm text-left border border-dark/15 transition-colors ${region ? 'text-dark' : 'text-dark/40'}`}
+                  >
+                    {region || 'Select your region (optional)'}
+                  </button>
+                  {showRegionPicker && (
+                    <div className="absolute z-30 mt-1 w-full bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+                      <div className="p-2">
+                        <input
+                          type="text"
+                          value={regionSearch}
+                          onChange={(e) => setRegionSearch(e.target.value)}
+                          placeholder="Search regions..."
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-cyan/20"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="max-h-48 overflow-y-auto">
+                        {filteredRegions.map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => { setRegion(r); setShowRegionPicker(false); setRegionSearch(''); }}
+                            className={`w-full px-4 py-2 text-sm text-left text-dark hover:bg-gray-50 transition-colors ${region === r ? 'bg-[#edfffe] font-semibold' : ''}`}
+                          >
+                            {r}
+                          </button>
+                        ))}
+                        {filteredRegions.length === 0 && (
+                          <p className="px-4 py-2 text-sm text-gray-400">No regions found</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <button
-                  key={r}
-                  type="button"
-                  onClick={() => { setRegion(r); setShowRegionPicker(false); setRegionSearch(''); }}
-                  className={`w-full px-4 py-2 text-sm text-left text-dark hover:bg-gray-50 transition-colors ${region === r ? 'bg-[#edfffe] font-semibold' : ''}`}
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="w-full px-6 py-3 bg-cyan text-dark font-bold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors disabled:opacity-60"
                 >
-                  {r}
+                  {status === 'loading' ? 'Subscribing...' : 'Notify Me'}
                 </button>
-              ))}
-              {filteredRegions.length === 0 && (
-                <p className="px-4 py-2 text-sm text-gray-400">No regions found</p>
-              )}
-            </div>
-          </div>
+
+                {status === 'error' && <p className="text-red-500 text-xs text-center">Something went wrong. Try again.</p>}
+              </form>
+            </motion.div>
+          </motion.div>
         )}
-      </div>
-      {status === 'error' && <p className="text-red-400 text-xs mt-1 sm:hidden">Something went wrong. Try again.</p>}
-    </form>
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -504,11 +556,16 @@ export default function CampsPage() {
                 <span className="block">{seasonTitle || 'Holiday Camp'}</span>
               </h1>
 
-              <p className="mt-6 text-lg md:text-xl text-white/80 font-[var(--font-body)] max-w-md">
-                Robotics, coding, 3D printing and more for <span className="whitespace-nowrap">ages 6–17.</span>
+              <p className="mt-4 text-xl md:text-2xl text-white/90 font-[var(--font-body)] font-semibold max-w-md">
+                Do something new this holiday.
+              </p>
+              <p className="mt-3 text-lg md:text-xl text-white/70 font-[var(--font-body)] max-w-md">
+                Robotics, coding, AI, 3D printing and more for <span className="whitespace-nowrap">ages 6–17.</span>
               </p>
 
-              {dataLoaded && seasonExpired ? (
+              {!dataLoaded ? (
+                <div className="mt-8 h-14" />
+              ) : seasonExpired ? (
                 <div className="mt-8">
                   <p className="text-white/70 text-sm mb-4">
                     {seasonTitle
@@ -537,7 +594,7 @@ export default function CampsPage() {
               )}
 
               <p className="mt-10 text-[13px] text-white/50 tracking-wide font-[var(--font-body)] uppercase font-bold">
-                <span className="text-cyan">Ofsted Registered</span> &nbsp;·&nbsp; <span className="text-pink-light">22,000+ Students</span>
+                <span className="text-cyan">Ofsted Registered</span> &nbsp;·&nbsp; <span className="text-pink-light">22,000+ Robocoders</span>
                 &nbsp;·&nbsp; <span className="text-orange">FTC Champions</span>
               </p>
             </div>
@@ -545,28 +602,33 @@ export default function CampsPage() {
         </section>
 
         {/* ───────── SOCIAL PROOF STRIP ───────── */}
-        <section className="bg-gradient-to-r from-dark-mid/80 via-dark-mid/60 to-dark-mid/80 border-t-2 border-cyan/40">
-          <div className="max-w-7xl mx-auto px-6 py-5 flex flex-wrap justify-center items-center gap-8 md:gap-14">
+        <section className="bg-[#edfffe] border-t-2 border-cyan/30">
+          <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-4 sm:gap-8 md:gap-14">
             <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)]">
-              <span className="text-cyan font-bold text-lg drop-shadow-[0_0_8px_rgba(0,210,211,0.5)]">22,000+</span>
-              <span className="text-white/50 ml-1.5">Robocoders</span>
+              <span className="text-[#00adb3] font-bold text-lg">22,000+</span>
+              <span className="text-dark/50 ml-1.5">Robocoders</span>
             </span>
-            <div className="hidden md:block w-px h-6 bg-white/10" />
+            <div className="hidden sm:block w-px h-6 bg-dark/10" />
             <div className="flex items-center gap-2.5">
-              <Image src="/logos/microsoft-education.png" alt="Microsoft Education Partner" width={40} height={40} className="h-9 w-auto drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]" />
-              <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)] text-white/50">Microsoft Education Partner</span>
+              <Image src="/logos/microsoft-education.png" alt="Microsoft Education Partner" width={40} height={40} className="h-9 w-auto" />
+              <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)] text-dark/50">Microsoft Education Partner</span>
             </div>
-            <div className="hidden md:block w-px h-6 bg-white/10" />
+            <div className="hidden sm:block w-px h-6 bg-dark/10" />
             <div className="flex items-center gap-2.5">
-              <Image src="/logos/ofsted.png" alt="Ofsted Registered" width={80} height={35} className="h-9 w-auto drop-shadow-[0_0_4px_rgba(255,255,255,0.3)]" />
-              <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)] text-white/50">Registered</span>
+              <Image src="/logos/ofsted.png" alt="Ofsted Registered" width={80} height={35} className="h-9 w-auto" />
+              <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)] text-dark/50">Registered</span>
             </div>
+            <div className="hidden sm:block w-px h-6 bg-dark/10" />
+            <span className="text-[13px] uppercase tracking-wider font-[var(--font-body)] text-dark/50">
+              <span className="text-orange font-bold">FTC Champions</span>
+            </span>
           </div>
         </section>
 
         {/* ───────── ACCREDITATION LOGOS (under fold, scrolling) ───────── */}
         <section className="bg-white border-b border-dark/5 overflow-hidden">
-          <div className="py-6">
+          <p className="text-center text-xs font-semibold uppercase tracking-wider text-dark/40 pt-6 pb-2">Our Partners</p>
+          <div className="py-4">
             <div className="animate-logo-scroll flex items-center gap-20 md:gap-28">
               {[...Array(6)].flatMap((_, setIdx) =>
                 [
@@ -591,267 +653,6 @@ export default function CampsPage() {
                 ))
               )}
             </div>
-          </div>
-        </section>
-
-        {/* ───────── INTRO + IMAGE ───────── */}
-        <section className="bg-white">
-          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 grid md:grid-cols-[45fr_55fr] gap-12 md:gap-16 items-center">
-            <Reveal>
-              <h2 className="font-[var(--font-body)] text-3xl md:text-4xl font-semibold text-dark leading-snug">
-                Build something real every day
-              </h2>
-              <p className="mt-5 text-dark-mid/80 text-lg leading-relaxed">
-                From robot battles to 3D-printed creations, every session is
-                hands-on and project-driven. Students rotate through activities
-                including robotics, electronics, game dev and mechanical
-                engineering, and finish the day with something they built
-                themselves.
-              </p>
-              {seasonExpired ? (
-                <span className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-400 font-bold text-sm rounded-full border-2 border-gray-200 cursor-not-allowed">
-                  Bookings closed
-                </span>
-              ) : (
-                <Link
-                  href="/book/haf"
-                  className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-cyan/10 text-dark font-bold text-sm rounded-full border-2 border-cyan/30 hover:bg-cyan/20 hover:border-cyan/50 transition-all"
-                >
-                  Book a place <ArrowRight size={16} />
-                </Link>
-              )}
-            </Reveal>
-
-            <Reveal delay={0.15}>
-              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl ring-1 ring-dark/5">
-                <Image
-                  src="/camp/intro-centre-overview.jpg"
-                  alt="Inside the Robocode centre with arcade games, mural and activity areas"
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width:768px) 100vw, 55vw"
-                />
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        <div className="h-1 bg-gradient-to-r from-cyan via-pink to-orange" />
-
-        {/* ───────── ACTIVITIES ───────── */}
-        <section id="activities" className="bg-surface">
-          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">
-            <Reveal>
-              <p className="text-pink font-semibold text-sm tracking-wider uppercase font-[var(--font-body)]">
-                What to Expect
-              </p>
-              <h2 className="mt-3 font-[var(--font-display)] text-3xl md:text-4xl text-dark uppercase">
-                What your child will do
-              </h2>
-              <p className="mt-4 text-sm text-dark/50 italic">
-                Activity availability may vary depending on the camp location and equipment on site.
-              </p>
-            </Reveal>
-
-            <div className="mt-14 grid md:grid-cols-2 gap-8">
-              {[
-                {
-                  title: 'Robotics',
-                  desc: 'Build, program and battle autonomous robots using competition-grade kits. From sensor arrays to motor control, students learn real engineering.',
-                  img: '/camp/activity-robotics.jpg',
-                  alt: 'Instructor and student examining a completed robot car at Robocode',
-                  color: 'border-cyan',
-                },
-                {
-                  title: 'Game Development',
-                  desc: 'Design characters, build levels and code game logic. Students create a playable game using industry-standard tools and creative problem solving.',
-                  img: '/camp/activity-game-dev-new.jpg',
-                  alt: 'Student at a racing simulator station at Robocode centre',
-                  color: 'border-pink',
-                },
-                {
-                  title: '3D Printing',
-                  desc: 'Sketch it, model it, print it, take it home. Students design in CAD software and watch their creations come to life on our Bambu Lab printers.',
-                  img: '/camp/activity-3d-printing.jpg',
-                  alt: 'Colourful 3D printed objects on display at the Robocode centre',
-                  color: 'border-orange',
-                },
-                {
-                  title: 'Electronics',
-                  desc: 'Wire circuits, connect sensors and program microcontrollers. Hands-on Arduino projects that light up, move and respond to the real world.',
-                  img: '/camp/activity-electronics.jpg',
-                  alt: 'Student proudly showing off completed Arduino breadboard project',
-                  color: 'border-cyan',
-                },
-                {
-                  title: 'Mechanical Engineering',
-                  desc: 'Design and construct mechanical builds. Students work with tools, materials and kits to solve engineering challenges as a team.',
-                  img: '/camp/activity-mechanical.jpg',
-                  alt: 'Students collaborating on building a robot together',
-                  color: 'border-pink',
-                },
-                {
-                  title: 'Physical Activity',
-                  desc: 'One hour of movement and games every day. Table tennis, team challenges and active play to keep energy up between sessions.',
-                  img: '/camp/activity-physical.jpg',
-                  alt: 'Students playing table tennis during break time at Robocode',
-                  color: 'border-orange',
-                },
-              ].map((a, i) => (
-                <Reveal key={a.title} delay={i * 0.05}>
-                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-dark/5 hover:shadow-md transition-shadow">
-                    <div className="relative aspect-square">
-                      <Image
-                        src={a.img}
-                        alt={a.alt}
-                        fill
-                        className="object-cover object-top"
-                        sizes="(max-width:768px) 100vw, 50vw"
-                      />
-                    </div>
-                    <div className={`p-6 border-l-4 ${a.color} ml-4`}>
-                      <h3 className="font-[var(--font-body)] text-lg font-bold text-dark">
-                        {a.title}
-                      </h3>
-                      <p className="mt-2 text-dark-mid/70 text-sm leading-relaxed">
-                        {a.desc}
-                      </p>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-
-            <Reveal className="mt-12">
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                {seasonExpired ? (
-                  <>
-                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
-                      Book Free Place (HAF)
-                    </span>
-                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
-                      Book Paid Camp
-                    </span>
-                    <span className="text-xs text-dark/40 font-medium italic">Bookings closed — sign up above to be notified</span>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                    >
-                      Book Free Place (HAF) <ArrowRight size={16} />
-                    </Link>
-                    <Link
-                      href="/book/paid"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
-                    >
-                      Book Paid Camp <ArrowRight size={16} />
-                    </Link>
-                  </>
-                )}
-              </div>
-            </Reveal>
-          </div>
-        </section>
-
-        {/* ───────── WHAT'S INCLUDED ───────── */}
-        <section className="bg-gradient-to-r from-dark via-dark-mid to-dark text-white">
-          <div className="max-w-7xl mx-auto px-6 py-14 md:py-16">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
-              {[
-                {
-                  icon: Utensils,
-                  label: 'Hot meal + fruit & veg',
-                  desc: 'Nutritious lunch provided daily',
-                  color: 'text-orange',
-                },
-                {
-                  icon: Wrench,
-                  label: 'All equipment included',
-                  desc: 'Laptops, kits and materials',
-                  color: 'text-cyan',
-                },
-                {
-                  icon: Activity,
-                  label: '1 hr physical activity',
-                  desc: 'Sports and games every day',
-                  color: 'text-pink-light',
-                },
-                {
-                  icon: ShieldCheck,
-                  label: 'Safe & supervised',
-                  desc: 'Ofsted registered, DBS-checked staff',
-                  color: 'text-cyan-light',
-                },
-              ].map((item) => (
-                <div key={item.label} className="text-center">
-                  <div className="flex justify-center">
-                    <item.icon size={28} className={item.color} />
-                  </div>
-                  <p className="mt-3 font-semibold text-sm">{item.label}</p>
-                  <p className="mt-1 text-white/50 text-xs">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ───────── PHOTO MARQUEE ───────── */}
-        <section className="bg-gradient-to-r from-dark via-dark-mid to-dark py-4 overflow-hidden">
-          <div className="animate-marquee flex gap-4">
-            {[...MARQUEE_IMAGES, ...MARQUEE_IMAGES].map((src, i) => (
-              <div
-                key={i}
-                className="relative w-72 md:w-80 h-52 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/10 hover:ring-cyan/40 transition-all"
-              >
-                <Image
-                  src={src}
-                  alt="Robocode camp activity photo"
-                  fill
-                  className="object-cover object-top"
-                  sizes="320px"
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ───────── CTA BETWEEN MARQUEE AND LOCATIONS ───────── */}
-        <section className="bg-surface">
-          <div className="max-w-3xl mx-auto px-6 py-14 text-center">
-            <Reveal>
-              {dataLoaded && seasonExpired ? (
-                <>
-                  <p className="text-dark-mid/70 text-sm leading-relaxed">
-                    Our next camp is on the way. Be the first to know when bookings open.
-                  </p>
-                  <div className="mt-5 flex justify-center">
-                    <NotifyForm variant="light" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-dark-mid/70 text-sm leading-relaxed">
-                    Spaces fill up fast. Secure your child&apos;s place for {seasonTitle || 'camp'} today.
-                  </p>
-                  <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                    >
-                      Book Free Place (HAF) <ArrowRight size={16} />
-                    </Link>
-                    <Link
-                      href="/book/paid"
-                      className="inline-flex items-center gap-2 px-7 py-3 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
-                    >
-                      Book Paid Camp <ArrowRight size={16} />
-                    </Link>
-                  </div>
-                </>
-              )}
-            </Reveal>
           </div>
         </section>
 
@@ -1055,38 +856,6 @@ export default function CampsPage() {
           </div>
         </section>
 
-        {/* ───────── CTA AFTER LOCATIONS ───────── */}
-        <section className="bg-gradient-to-r from-dark via-dark-mid to-dark">
-          <div className="max-w-3xl mx-auto px-6 py-12 text-center">
-            <Reveal>
-              {dataLoaded && seasonExpired ? (
-                <>
-                  <p className="text-white/70 text-sm">
-                    Don&apos;t miss the next camp. Get notified as soon as bookings open.
-                  </p>
-                  <div className="mt-4 flex justify-center">
-                    <NotifyForm variant="dark" />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p className="text-white/70 text-sm">
-                    Not sure which location? All HAF places are completely free.
-                  </p>
-                  <div className="mt-4">
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                    >
-                      Check Eligibility & Book <ArrowRight size={16} />
-                    </Link>
-                  </div>
-                </>
-              )}
-            </Reveal>
-          </div>
-        </section>
-
         {/* ───────── PRICING ───────── */}
         <section id="pricing" className="bg-white">
           <div className="max-w-3xl mx-auto px-6 py-20 md:py-28">
@@ -1104,77 +873,331 @@ export default function CampsPage() {
             </Reveal>
 
             <Reveal className="mt-10">
-              <div className="border border-dark/8 rounded-2xl overflow-hidden">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-dark/8 text-xs text-dark-mid/50 uppercase tracking-wider">
-                      <th className="px-5 py-3 font-semibold">Package</th>
-                      <th className="px-5 py-3 font-semibold">Price</th>
-                      <th className="px-5 py-3 font-semibold hidden sm:table-cell">
-                        Per day
-                      </th>
-                      <th className="px-5 py-3 font-semibold text-right">Saving</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pricingRows.map((p) => (
-                      <tr
-                        key={p.days}
-                        className={clsx(
-                          'border-b border-dark/5 last:border-0 transition-colors',
-                          p.badge === 'Best Value' && 'bg-gradient-to-r from-cyan-50 to-pink/5 border-l-4 border-l-cyan'
-                        )}
-                      >
-                        <td className="px-5 py-4 font-semibold text-dark">
-                          {p.badge === 'Best Value' && (
-                            <span className="block text-[10px] text-cyan font-bold uppercase tracking-wider mb-0.5">
-                              Best Value
-                            </span>
-                          )}
-                          {p.days}
-                        </td>
-                        <td className="px-5 py-4 font-semibold text-dark text-lg">
-                          £{p.price}
-                        </td>
-                        <td className="px-5 py-4 text-dark-mid/60 text-sm hidden sm:table-cell">
-                          {p.perDay}/day
-                        </td>
-                        <td className="px-5 py-4 text-right">
-                          {p.save && (
-                            <span className={clsx(
-                              'text-xs font-bold px-2.5 py-1 rounded-full',
-                              p.badge === 'Best Value'
-                                ? 'text-white bg-pink'
-                                : 'text-pink bg-pink/10'
-                            )}>
-                              Save {p.save}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className={`grid gap-4 ${pricingRows.length <= 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-lg mx-auto' : 'grid-cols-2 md:grid-cols-4'}`}>
+                {pricingRows.map((p) => (
+                  <div
+                    key={p.days}
+                    className={clsx(
+                      'relative rounded-2xl p-6 text-center border-2 transition-shadow hover:shadow-md',
+                      p.badge === 'Best Value'
+                        ? 'border-cyan bg-gradient-to-br from-[#edfffe] to-[#fff0fd] shadow-md'
+                        : 'border-dark/10 bg-white'
+                    )}
+                  >
+                    {p.badge === 'Best Value' && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wider bg-cyan text-dark px-3 py-1 rounded-full">
+                        Best Value
+                      </span>
+                    )}
+                    <p className="text-dark/60 text-sm font-semibold uppercase tracking-wide">{p.days}</p>
+                    <p className="mt-2 text-4xl font-bold text-dark">£{p.price}</p>
+                    <p className="mt-1 text-dark/40 text-sm">{p.perDay}/day</p>
+                    {p.save && (
+                      <span className={clsx(
+                        'inline-block mt-3 text-xs font-bold px-3 py-1 rounded-full',
+                        p.badge === 'Best Value'
+                          ? 'text-white bg-pink'
+                          : 'text-pink bg-pink/10'
+                      )}>
+                        Save {p.save}
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
 
-              <p className="mt-4 text-center text-xs text-dark-mid/50">
+              <p className="mt-6 text-center text-xs text-dark-mid/50">
                 Childcare vouchers accepted. All staff are DBS Enhanced checked.
               </p>
 
-              <div className="mt-6 text-center">
+              <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 {seasonExpired ? (
-                  <span className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm cursor-not-allowed">
-                    Bookings closed
-                  </span>
+                  <>
+                    <span className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm cursor-not-allowed">
+                      Bookings closed
+                    </span>
+                  </>
                 ) : (
-                  <Link
-                    href="/book/paid"
-                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-pink text-white font-semibold rounded-full text-sm hover:bg-pink-light transition-colors"
-                  >
-                    Book Paid Camp <ArrowRight size={16} />
-                  </Link>
+                  <>
+                    <Link
+                      href="/book/paid"
+                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-pink text-white font-semibold rounded-full text-sm hover:bg-pink-light transition-colors"
+                    >
+                      Book Paid Camp <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm hover:bg-cyan-light transition-colors"
+                    >
+                      Book Free Place (HAF) <ArrowRight size={16} />
+                    </Link>
+                  </>
                 )}
               </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ───────── INTRO + IMAGE ───────── */}
+        <section className="bg-white">
+          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28 grid md:grid-cols-[45fr_55fr] gap-12 md:gap-16 items-center">
+            <Reveal>
+              <p className="text-pink font-semibold text-sm tracking-wider uppercase font-[var(--font-body)]">
+                Turn screen time into build time
+              </p>
+              <h2 className="mt-3 font-[var(--font-body)] text-3xl md:text-4xl font-semibold text-dark leading-snug">
+                Build something real every day
+              </h2>
+              <p className="mt-5 text-dark-mid/80 text-lg leading-relaxed">
+                From robot battles to 3D-printed creations, every session is
+                hands-on and project-driven. Robocoders rotate through activities
+                including robotics, electronics, AI, game dev and mechanical
+                engineering, and finish the day with something they built
+                themselves.
+              </p>
+              {seasonExpired ? (
+                <span className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-400 font-bold text-sm rounded-full border-2 border-gray-200 cursor-not-allowed">
+                  Bookings closed
+                </span>
+              ) : (
+                <Link
+                  href="/book/haf"
+                  className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-cyan/10 text-dark font-bold text-sm rounded-full border-2 border-cyan/30 hover:bg-cyan/20 hover:border-cyan/50 transition-all"
+                >
+                  Book a place <ArrowRight size={16} />
+                </Link>
+              )}
+            </Reveal>
+
+            <Reveal delay={0.15}>
+              <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl ring-1 ring-dark/5">
+                <Image
+                  src="/camp/intro-centre-overview.jpg"
+                  alt="Inside the Robocode centre with arcade games, mural and activity areas"
+                  fill
+                  className="object-cover object-center"
+                  sizes="(max-width:768px) 100vw, 55vw"
+                />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        <div className="h-1 bg-gradient-to-r from-cyan via-pink to-orange" />
+
+        {/* ───────── ACTIVITIES ───────── */}
+        <section id="activities" className="bg-surface">
+          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">
+            <Reveal>
+              <p className="text-pink font-semibold text-sm tracking-wider uppercase font-[var(--font-body)]">
+                What to Expect
+              </p>
+              <h2 className="mt-3 font-[var(--font-display)] text-3xl md:text-4xl text-dark uppercase">
+                What your child will do
+              </h2>
+              <p className="mt-4 text-sm text-dark/50 italic">
+                Activity availability may vary depending on the camp location and equipment on site.
+              </p>
+            </Reveal>
+
+            <div className="mt-14 grid md:grid-cols-2 gap-8">
+              {[
+                {
+                  title: 'Robotics',
+                  desc: 'Build, program and battle autonomous robots using competition-grade kits. From sensor arrays to motor control, Robocoders learn real engineering.',
+                  img: '/camp/activity-robotics.jpg',
+                  alt: 'Instructor and student examining a completed robot car at Robocode',
+                  color: 'border-cyan',
+                },
+                {
+                  title: 'Game Development',
+                  desc: 'Design characters, build levels and code game logic. Robocoders create a playable game using industry-standard tools and creative problem solving.',
+                  img: '/camp/activity-game-dev-new.jpg',
+                  alt: 'Student at a racing simulator station at Robocode centre',
+                  color: 'border-pink',
+                },
+                {
+                  title: '3D Printing',
+                  desc: 'Sketch it, model it, print it, take it home. Robocoders design in CAD software and watch their creations come to life on our Bambu Lab printers.',
+                  img: '/camp/activity-3d-printing.jpg',
+                  alt: 'Colourful 3D printed objects on display at the Robocode centre',
+                  color: 'border-orange',
+                },
+                {
+                  title: 'Electronics',
+                  desc: 'Wire circuits, connect sensors and program microcontrollers. Hands-on Arduino projects that light up, move and respond to the real world.',
+                  img: '/camp/activity-electronics.jpg',
+                  alt: 'Student proudly showing off completed Arduino breadboard project',
+                  color: 'border-cyan',
+                },
+                {
+                  title: 'AI & Cyber Security',
+                  desc: 'Understand the tech shaping the world. Hands-on AI projects and cyber security challenges, not just theory.',
+                  img: '/camp/camp-rc-47.jpg',
+                  alt: 'Student proudly holding up a completed electronics project',
+                  color: 'border-pink',
+                },
+                {
+                  title: 'Physical Activity',
+                  desc: 'Movement, games and active play to keep energy up between sessions. Table tennis, team challenges and more.',
+                  img: '/camp/activity-physical.jpg',
+                  alt: 'Students playing table tennis during break time at Robocode',
+                  color: 'border-orange',
+                },
+              ].map((a, i) => (
+                <Reveal key={a.title} delay={i * 0.05}>
+                  <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-dark/5 hover:shadow-md transition-shadow">
+                    <div className="relative aspect-square">
+                      <Image
+                        src={a.img}
+                        alt={a.alt}
+                        fill
+                        className="object-cover object-top"
+                        sizes="(max-width:768px) 100vw, 50vw"
+                      />
+                    </div>
+                    <div className={`p-6 border-l-4 ${a.color} ml-4`}>
+                      <h3 className="font-[var(--font-body)] text-lg font-bold text-dark">
+                        {a.title}
+                      </h3>
+                      <p className="mt-2 text-dark-mid/70 text-sm leading-relaxed">
+                        {a.desc}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal className="mt-12">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                {seasonExpired ? (
+                  <>
+                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
+                      Book Free Place (HAF)
+                    </span>
+                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
+                      Book Paid Camp
+                    </span>
+                    <span className="text-xs text-dark/40 font-medium italic">Bookings closed — sign up above to be notified</span>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                    >
+                      Book Free Place (HAF) <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      href="/book/paid"
+                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                    >
+                      Book Paid Camp <ArrowRight size={16} />
+                    </Link>
+                  </>
+                )}
+              </div>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ───────── WHAT'S INCLUDED ───────── */}
+        <section className="bg-gradient-to-br from-[#fff0fd] via-[#edfffe] to-white">
+          <div className="max-w-7xl mx-auto px-6 py-14 md:py-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+              {[
+                {
+                  icon: Utensils,
+                  label: 'Hot meal + fruit & veg',
+                  desc: 'Nutritious lunch (subject to availability)',
+                  color: 'text-orange',
+                },
+                {
+                  icon: Wrench,
+                  label: 'All equipment included',
+                  desc: 'Laptops, kits and materials',
+                  color: 'text-[#00adb3]',
+                },
+                {
+                  icon: Activity,
+                  label: 'Physical activity',
+                  desc: 'Sports and active play included',
+                  color: 'text-pink',
+                },
+                {
+                  icon: ShieldCheck,
+                  label: 'Safe & supervised',
+                  desc: 'Ofsted registered, DBS-checked staff',
+                  color: 'text-[#00adb3]',
+                },
+              ].map((item) => (
+                <div key={item.label} className="text-center">
+                  <div className="flex justify-center">
+                    <item.icon size={28} className={item.color} />
+                  </div>
+                  <p className="mt-3 font-semibold text-sm text-dark">{item.label}</p>
+                  <p className="mt-1 text-dark/50 text-xs">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ───────── PHOTO MARQUEE ───────── */}
+        <section className="bg-[#edfffe] py-4 overflow-hidden">
+          <div className="animate-marquee flex gap-4">
+            {[...MARQUEE_IMAGES, ...MARQUEE_IMAGES].map((src, i) => (
+              <div
+                key={i}
+                className="relative w-72 md:w-80 h-52 rounded-xl overflow-hidden shrink-0 ring-1 ring-dark/10 hover:ring-cyan/40 transition-all"
+              >
+                <Image
+                  src={src}
+                  alt="Robocode camp activity photo"
+                  fill
+                  className="object-cover object-top"
+                  sizes="320px"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ───────── MID-PAGE CTA ───────── */}
+        <section className="bg-surface">
+          <div className="max-w-3xl mx-auto px-6 py-14 text-center">
+            <Reveal>
+              {dataLoaded && seasonExpired ? (
+                <>
+                  <p className="text-dark-mid/70 text-sm leading-relaxed">
+                    Our next camp is on the way. Be the first to know when bookings open.
+                  </p>
+                  <div className="mt-5 flex justify-center">
+                    <NotifyForm variant="light" />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="text-dark-mid/70 text-sm leading-relaxed">
+                    Spaces fill up fast. Secure your child&apos;s place for {seasonTitle || 'camp'} today.
+                  </p>
+                  <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
+                    <Link
+                      href="/book/haf"
+                      className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
+                    >
+                      Book Free Place (HAF) <ArrowRight size={16} />
+                    </Link>
+                    <Link
+                      href="/book/paid"
+                      className="inline-flex items-center gap-2 px-7 py-3 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                    >
+                      Book Paid Camp <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </>
+              )}
             </Reveal>
           </div>
         </section>
@@ -1206,42 +1229,8 @@ export default function CampsPage() {
           </div>
         </section>
 
-        {/* ───────── ACCREDITATIONS ───────── */}
-        <section className="bg-white border-t border-dark/5 overflow-hidden">
-          <div className="max-w-5xl mx-auto px-6 pt-12 pb-4">
-            <Reveal>
-              <p className="text-center text-xs font-semibold uppercase tracking-wider text-dark/40 mb-6">
-                Accredited & Recognised By
-              </p>
-            </Reveal>
-          </div>
-          <div className="pb-10">
-            <div className="animate-logo-scroll flex items-center gap-20 md:gap-28">
-              {[...Array(6)].flatMap((_, setIdx) =>
-                [
-                  { src: '/logos/ofsted.png', alt: 'Ofsted Registered', w: 130, h: 55 },
-                  { src: '/logos/jcq.png', alt: 'JCQ Exam Centre (AQA & WJEC)', w: 180, h: 55 },
-                  { src: '/logos/bcs.png', alt: 'BCS Approved Centre', w: 70, h: 80 },
-                  { src: '/logos/matrix.png', alt: 'Matrix Quality Standard', w: 180, h: 55 },
-                  { src: '/logos/microsoft-education.png', alt: 'Microsoft Education Partner', w: 80, h: 80 },
-                  { src: '/logos/first-tech-challenge.png', alt: 'FIRST Tech Challenge', w: 110, h: 70 },
-                  { src: '/logos/aqa.svg', alt: 'AQA Exam Board', w: 110, h: 45 },
-                  { src: '/logos/wjec.png', alt: 'WJEC CBAC', w: 90, h: 80 },
-                  { src: '/logos/ukri-innovateuk.png', alt: 'Innovate UK', w: 120, h: 55 },
-                ].map((logo) => (
-                  <Image
-                    key={`${setIdx}-${logo.alt}`}
-                    src={logo.src}
-                    alt={logo.alt}
-                    width={logo.w}
-                    height={logo.h}
-                    className="h-12 md:h-14 w-auto shrink-0 opacity-60 hover:opacity-100 transition-opacity"
-                  />
-                ))
-              )}
-            </div>
-          </div>
-        </section>
+        {/* ───────── FAQ ───────── */}
+        <FaqSection />
 
         {/* ───────── FINAL CTA ───────── */}
         <section className="relative py-28 md:py-36 overflow-hidden">
@@ -1314,7 +1303,7 @@ export default function CampsPage() {
             </p>
             <div className="mt-4 flex gap-3">
               <a
-                href="https://instagram.com/robocodeuk"
+                href="https://www.instagram.com/robocode_official/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Robocode on Instagram"
@@ -1323,7 +1312,7 @@ export default function CampsPage() {
                 <Instagram size={18} />
               </a>
               <a
-                href="https://facebook.com/robocodeuk"
+                href="https://www.facebook.com/RobocodeOfficial/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Robocode on Facebook"
@@ -1332,13 +1321,31 @@ export default function CampsPage() {
                 <Facebook size={18} />
               </a>
               <a
-                href="https://youtube.com/@robocodeuk"
+                href="https://www.youtube.com/@robocode_official"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Robocode on YouTube"
                 className="text-white/30 hover:text-orange transition-colors"
               >
                 <Youtube size={18} />
+              </a>
+              <a
+                href="https://www.tiktok.com/@robocode_official"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Robocode on TikTok"
+                className="text-white/30 hover:text-pink transition-colors"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 00-.79-.05A6.34 6.34 0 003.15 15.2a6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.34-6.34V8.76a8.28 8.28 0 004.76 1.5v-3.4a4.85 4.85 0 01-1-.17z"/></svg>
+              </a>
+              <a
+                href="https://www.linkedin.com/company/robocodeofficial"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Robocode on LinkedIn"
+                className="text-white/30 hover:text-cyan transition-colors"
+              >
+                <Linkedin size={18} />
               </a>
             </div>
           </div>
@@ -1506,6 +1513,91 @@ function Navbar({
   );
 }
 
+/* ─── FAQ Section ─── */
+const FAQ_ITEMS = [
+  {
+    q: 'What is HAF and who is it for?',
+    a: 'The Holiday Activities and Food (HAF) programme provides free holiday camp places for children who receive benefits-related free school meals. You will need a valid HAF code from your council or school to book a free place.',
+  },
+  {
+    q: 'What are the camp timings?',
+    a: 'All sessions run 10:00 AM to 2:00 PM. Drop-off is from 9:45 AM and collection is at 2:00 PM sharp.',
+  },
+  {
+    q: 'What activities are included?',
+    a: 'Robocoders rotate through robotics, game development, 3D printing, electronics, AI and cyber security, and physical activity. Availability may vary by venue and equipment on site.',
+  },
+  {
+    q: 'Is lunch provided?',
+    a: 'A hot meal, fruit and vegetables are provided for HAF-funded places. Paid camp attendees may also receive meals (subject to availability). Please let us know about any dietary requirements or allergies at booking.',
+  },
+  {
+    q: 'What about children with SEND or allergies?',
+    a: 'We welcome all children. Our Mentors are experienced in supporting children with additional needs. Please provide details at booking so we can make the right adjustments.',
+  },
+  {
+    q: 'Do I need to bring anything?',
+    a: 'Just comfortable clothes, a water bottle, and curiosity. All tech equipment, laptops, kits and materials are provided.',
+  },
+  {
+    q: 'How do I book?',
+    a: 'Use the Book Free Place (HAF) button if you have a HAF code, or Book Paid Camp for paid places. The booking form takes about 5 minutes to complete.',
+  },
+];
+
+function FaqSection() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+  return (
+    <section className="bg-white border-t border-dark/5">
+      <div className="max-w-3xl mx-auto px-6 py-20 md:py-28">
+        <Reveal>
+          <p className="text-orange font-semibold text-sm tracking-wider uppercase font-[var(--font-body)] text-center">
+            FAQ
+          </p>
+          <h2 className="mt-3 font-[var(--font-display)] text-3xl md:text-4xl text-dark uppercase text-center">
+            Common Questions
+          </h2>
+        </Reveal>
+
+        <div className="mt-12 space-y-3">
+          {FAQ_ITEMS.map((item, i) => (
+            <Reveal key={i} delay={i * 0.03}>
+              <div className="border border-dark/8 rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                  className="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-surface/50 transition-colors"
+                >
+                  <span className="font-semibold text-dark text-sm pr-4">{item.q}</span>
+                  {openIdx === i ? (
+                    <ChevronUp size={18} className="text-dark/40 shrink-0" />
+                  ) : (
+                    <ChevronDown size={18} className="text-dark/40 shrink-0" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openIdx === i && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.25 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="px-6 pb-5 text-dark/60 text-sm leading-relaxed">
+                        {item.a}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ─── Testimonial Carousel ─── */
 function TestimonialCarousel() {
   const [idx, setIdx] = useState(0);
@@ -1526,6 +1618,15 @@ function TestimonialCarousel() {
           <p className="text-cyan font-semibold text-sm tracking-wider uppercase font-[var(--font-body)]">
             Reviews
           </p>
+          <div className="mt-3 flex items-center justify-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" className="text-dark/70"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+            <span className="text-sm text-dark/50 font-medium">From Google Reviews</span>
+            <div className="flex gap-0.5">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={14} className="text-yellow-400 fill-yellow-400" />
+              ))}
+            </div>
+          </div>
         </Reveal>
 
         <div className="mt-10 relative min-h-[200px]">

@@ -43,12 +43,12 @@ export interface ChildFormState {
   fsmEligible: boolean;
   ethnicity: string;
   gender: string;
-  hasSEND: boolean;
+  hasSEND: boolean | null;
   hasEHCP: boolean;
   ehcpDetails: string;
-  hasAllergies: boolean;
+  hasAllergies: boolean | null;
   allergyDetails: string;
-  photoPermission: boolean;
+  photoPermission: boolean | null;
 }
 
 export interface BookingFormState {
@@ -77,12 +77,12 @@ const EMPTY_CHILD: ChildFormState = {
   fsmEligible: true,
   ethnicity: '',
   gender: '',
-  hasSEND: false,
+  hasSEND: null,
   hasEHCP: false,
   ehcpDetails: '',
-  hasAllergies: false,
+  hasAllergies: null,
   allergyDetails: '',
-  photoPermission: false,
+  photoPermission: null,
 };
 
 const SLUG_NAME_MAP: Record<string, string> = {
@@ -296,12 +296,12 @@ export default function BookingWizard({ bookingType }: BookingWizardProps) {
           fsmEligible: isHaf ? c.fsmEligible : undefined,
           ethnicity: isHaf ? (c.ethnicity || undefined) : undefined,
           gender: isHaf ? (c.gender || undefined) : undefined,
-          hasSEND: c.hasSEND,
+          hasSEND: c.hasSEND ?? false,
           hasEHCP: c.hasEHCP,
           ehcpDetails: c.ehcpDetails || undefined,
-          hasAllergies: c.hasAllergies,
+          hasAllergies: c.hasAllergies ?? false,
           allergyDetails: c.allergyDetails || undefined,
-          photoPermission: c.photoPermission,
+          photoPermission: c.photoPermission ?? false,
         })),
         selectedDays: form.selectedDays,
       };

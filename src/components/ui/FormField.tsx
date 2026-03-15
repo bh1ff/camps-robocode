@@ -64,7 +64,7 @@ export function FormSelect({ label, error, options, className = '', ...props }: 
 
 interface ToggleGroupProps {
   label: string;
-  value: boolean;
+  value: boolean | null | undefined;
   onChange: (val: boolean) => void;
   error?: string;
   required?: boolean;
@@ -82,7 +82,7 @@ export function ToggleGroup({ label, value, onChange, error, required }: ToggleG
           type="button"
           onClick={() => onChange(true)}
           className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all border-2 ${
-            value
+            value === true
               ? 'bg-[#00dcde] text-[#003439] border-[#00dcde]'
               : 'bg-white text-gray-500 border-gray-200 hover:border-[#00dcde]/50'
           }`}
@@ -93,7 +93,7 @@ export function ToggleGroup({ label, value, onChange, error, required }: ToggleG
           type="button"
           onClick={() => onChange(false)}
           className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm transition-all border-2 ${
-            !value
+            value === false
               ? 'bg-[#003439] text-white border-[#003439]'
               : 'bg-white text-gray-500 border-gray-200 hover:border-[#003439]/50'
           }`}

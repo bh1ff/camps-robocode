@@ -243,6 +243,7 @@ model Attendance {
 model Subscriber {
   id        String   @id @default(cuid())
   email     String   @unique
+  phone     String?
   source    String   @default("website")
   region    String?
   createdAt DateTime @default(now())

@@ -164,7 +164,7 @@ function buildConfirmationHtml(booking: BookingForEmail): string {
       <a href="mailto:info@robocode.uk" style="color:#00dcde;text-decoration:none">info@robocode.uk</a>
       &nbsp;|&nbsp; <a href="tel:01217691642" style="color:#00dcde;text-decoration:none">0121 769 1642</a>
     </p>
-    <p style="margin:12px 0 0;color:#05575c;font-size:11px">&copy; ${new Date().getFullYear()} Robocode UK Limited. All rights reserved.</p>
+    <p style="margin:12px 0 0;color:#05575c;font-size:11px">&copy; ${new Date().getFullYear()} RobocodeUK Limited. All rights reserved.</p>
   </td></tr>
 
 </table>
