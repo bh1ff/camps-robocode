@@ -344,7 +344,6 @@ function NotifyForm({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
     );
   }
 
-  const isDark = variant === 'dark';
   return (
     <>
       <button
@@ -463,7 +462,7 @@ function NotifyForm({ variant = 'dark' }: { variant?: 'dark' | 'light' }) {
 }
 
 /* ─── page ─── */
-export default function CampsPage() {
+export default function PaidCampsPage() {
   useLenis();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pricingRows, setPricingRows] = useState<PricingRow[]>(FALLBACK_PRICING);
@@ -500,7 +499,9 @@ export default function CampsPage() {
     fetch('/api/locations')
       .then((r) => r.json())
       .then((locs: ApiLocation[]) => {
-        if (Array.isArray(locs)) setLocations(locs.map(toLocationDisplay));
+        if (Array.isArray(locs)) {
+          setLocations(locs.map(toLocationDisplay).filter((loc) => loc.paid));
+        }
       })
       .catch(() => {})
       .finally(() => setDataLoaded(true));
@@ -511,7 +512,6 @@ export default function CampsPage() {
   const regionOptions = Array.from(new Set(locations.map((l) => l.tag))).sort();
   const filteredLocations = locations.filter((loc) => {
     if (regionFilter !== 'all' && loc.tag !== regionFilter) return false;
-    if (typeFilter === 'haf' && !loc.haf) return false;
     if (typeFilter === 'paid' && !loc.paid) return false;
     return true;
   });
@@ -557,7 +557,7 @@ export default function CampsPage() {
               </h1>
 
               <p className="mt-4 text-xl md:text-2xl text-white/90 font-[var(--font-body)] font-semibold max-w-md">
-                Do something new this holiday.
+                Premium holiday tech camps.
               </p>
               <p className="mt-3 text-lg md:text-xl text-white/70 font-[var(--font-body)] max-w-md">
                 Robotics, coding, AI, 3D printing and more for <span className="whitespace-nowrap">ages 6–17.</span>
@@ -576,13 +576,6 @@ export default function CampsPage() {
                 </div>
               ) : (
                 <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  <Link
-                    href="/book/haf"
-                    className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-cyan text-dark font-bold rounded-full text-base tracking-wide hover:bg-cyan-light transition-colors shadow-lg shadow-cyan/20"
-                  >
-                    Book Free Place (HAF)
-                    <ArrowRight size={18} />
-                  </Link>
                   <Link
                     href="/book/paid"
                     className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-8 py-4 bg-pink text-white font-bold rounded-full text-base tracking-wide hover:bg-pink-light transition-colors shadow-lg shadow-pink/20"
@@ -664,15 +657,6 @@ export default function CampsPage() {
               </h2>
             </Reveal>
 
-            <Reveal className="mt-6">
-              <div className="bg-cyan-50 border-2 border-cyan/25 rounded-xl p-6 text-sm text-dark/80">
-                <strong className="text-dark text-base">HAF eligibility:</strong>{' '}
-                Free places are funded by the Holiday Activities & Food programme.
-                Children must live or attend school in the relevant council
-                area ({regionOptions.length > 0 ? regionOptions.join(' or ') : 'your local council area'}). A valid HAF code is required at booking.
-              </div>
-            </Reveal>
-
             {locations.length > 1 && (
               <Reveal className="mt-8">
                 <div className="flex flex-wrap items-center gap-3">
@@ -701,7 +685,6 @@ export default function CampsPage() {
                       className="appearance-none bg-white border border-dark/10 rounded-full pl-4 pr-9 py-2 text-sm font-medium text-dark cursor-pointer hover:border-cyan/50 focus:border-cyan focus:ring-2 focus:ring-cyan/20 outline-none transition-all"
                     >
                       <option value="all">All types</option>
-                      <option value="haf">HAF Free</option>
                       <option value="paid">Paid</option>
                     </select>
                     <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-dark/30 pointer-events-none" />
@@ -741,16 +724,9 @@ export default function CampsPage() {
                         <span className="text-xs font-bold uppercase tracking-wider text-white bg-dark px-3 py-1.5 rounded-full">
                           {loc.tag}
                         </span>
-                        {loc.haf && (
-                          <span className="text-xs font-bold uppercase tracking-wider text-white bg-emerald-500 px-3 py-1.5 rounded-full">
-                            HAF Free
-                          </span>
-                        )}
-                        {loc.paid && (
-                          <span className="text-xs font-bold uppercase tracking-wider text-white bg-pink px-3 py-1.5 rounded-full">
-                            Paid
-                          </span>
-                        )}
+                        <span className="text-xs font-bold uppercase tracking-wider text-white bg-pink px-3 py-1.5 rounded-full">
+                          Paid
+                        </span>
                       </div>
 
                       <h3 className="font-[var(--font-body)] text-xl md:text-2xl font-bold text-dark">
@@ -775,37 +751,18 @@ export default function CampsPage() {
                       <div className="mt-6 flex flex-wrap items-center gap-2">
                         {seasonExpired ? (
                           <>
-                            {loc.haf && (
-                              <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 text-sm font-bold rounded-full cursor-not-allowed">
-                                Book Free (HAF)
-                              </span>
-                            )}
-                            {loc.paid && (
-                              <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 text-sm font-bold rounded-full cursor-not-allowed">
-                                Book Paid
-                              </span>
-                            )}
+                            <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 text-sm font-bold rounded-full cursor-not-allowed">
+                              Book Paid
+                            </span>
                             <span className="text-xs text-dark/40 font-medium italic">Bookings closed</span>
                           </>
                         ) : (
-                          <>
-                            {loc.haf && (
-                              <Link
-                                href={`/book/haf?location=${loc.slug}`}
-                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-full hover:bg-emerald-600 transition-colors"
-                              >
-                                Book Free (HAF) <ChevronRight size={14} />
-                              </Link>
-                            )}
-                            {loc.paid && (
-                              <Link
-                                href={`/book/paid?location=${loc.slug}`}
-                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink text-white text-sm font-bold rounded-full hover:bg-pink-light transition-colors"
-                              >
-                                Book Paid <ChevronRight size={14} />
-                              </Link>
-                            )}
-                          </>
+                          <Link
+                            href={`/book/paid?location=${loc.slug}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-pink text-white text-sm font-bold rounded-full hover:bg-pink-light transition-colors"
+                          >
+                            Book Paid <ChevronRight size={14} />
+                          </Link>
                         )}
                       </div>
                     </div>
@@ -908,26 +865,16 @@ export default function CampsPage() {
 
               <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
                 {seasonExpired ? (
-                  <>
-                    <span className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm cursor-not-allowed">
-                      Bookings closed
-                    </span>
-                  </>
+                  <span className="inline-flex items-center gap-2 px-8 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm cursor-not-allowed">
+                    Bookings closed
+                  </span>
                 ) : (
-                  <>
-                    <Link
-                      href="/book/paid"
-                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-pink text-white font-semibold rounded-full text-sm hover:bg-pink-light transition-colors"
-                    >
-                      Book Paid Camp <ArrowRight size={16} />
-                    </Link>
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-8 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm hover:bg-cyan-light transition-colors"
-                    >
-                      Book Free Place (HAF) <ArrowRight size={16} />
-                    </Link>
-                  </>
+                  <Link
+                    href="/book/paid"
+                    className="inline-flex items-center gap-2 px-8 py-3.5 bg-pink text-white font-semibold rounded-full text-sm hover:bg-pink-light transition-colors"
+                  >
+                    Book Paid Camp <ArrowRight size={16} />
+                  </Link>
                 )}
               </div>
             </Reveal>
@@ -957,7 +904,7 @@ export default function CampsPage() {
                 </span>
               ) : (
                 <Link
-                  href="/book/haf"
+                  href="/book/paid"
                   className="mt-7 inline-flex items-center gap-2 px-6 py-3 bg-cyan/10 text-dark font-bold text-sm rounded-full border-2 border-cyan/30 hover:bg-cyan/20 hover:border-cyan/50 transition-all"
                 >
                   Book a place <ArrowRight size={16} />
@@ -1070,28 +1017,17 @@ export default function CampsPage() {
                 {seasonExpired ? (
                   <>
                     <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
-                      Book Free Place (HAF)
-                    </span>
-                    <span className="inline-flex items-center gap-2 px-7 py-3.5 bg-gray-200 text-gray-400 font-semibold rounded-full text-sm tracking-wide cursor-not-allowed">
                       Book Paid Camp
                     </span>
                     <span className="text-xs text-dark/40 font-medium italic">Bookings closed — sign up above to be notified</span>
                   </>
                 ) : (
-                  <>
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                    >
-                      Book Free Place (HAF) <ArrowRight size={16} />
-                    </Link>
-                    <Link
-                      href="/book/paid"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
-                    >
-                      Book Paid Camp <ArrowRight size={16} />
-                    </Link>
-                  </>
+                  <Link
+                    href="/book/paid"
+                    className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
+                  >
+                    Book Paid Camp <ArrowRight size={16} />
+                  </Link>
                 )}
               </div>
             </Reveal>
@@ -1106,7 +1042,7 @@ export default function CampsPage() {
                 {
                   icon: Utensils,
                   label: 'Hot meal + fruit & veg',
-                  desc: 'Nutritious lunch (subject to availability)',
+                  desc: 'Subject to availability',
                   color: 'text-orange',
                 },
                 {
@@ -1179,12 +1115,6 @@ export default function CampsPage() {
                     Spaces fill up fast. Secure your child&apos;s place for {seasonTitle || 'camp'} today.
                   </p>
                   <div className="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-7 py-3 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                    >
-                      Book Free Place (HAF) <ArrowRight size={16} />
-                    </Link>
                     <Link
                       href="/book/paid"
                       className="inline-flex items-center gap-2 px-7 py-3 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
@@ -1262,12 +1192,6 @@ export default function CampsPage() {
                     <span className="bg-gradient-to-r from-cyan via-pink-light to-orange bg-clip-text text-transparent">{seasonTitle || 'Holiday Camp'}</span>
                   </h2>
                   <div className="mt-8 flex flex-wrap justify-center gap-4">
-                    <Link
-                      href="/book/haf"
-                      className="inline-flex items-center gap-2 px-7 py-3.5 bg-cyan text-dark font-semibold rounded-full text-sm tracking-wide hover:bg-cyan-light transition-colors"
-                    >
-                      Book Free Place (HAF) <ArrowRight size={16} />
-                    </Link>
                     <Link
                       href="/book/paid"
                       className="inline-flex items-center gap-2 px-7 py-3.5 bg-pink text-white font-semibold rounded-full text-sm tracking-wide hover:bg-pink-light transition-colors"
@@ -1458,7 +1382,7 @@ function Navbar({
             </a>
           ))}
           <Link
-            href="/book/haf"
+            href="/book/paid"
             className="px-5 py-2 bg-cyan text-dark text-sm font-semibold rounded-full hover:bg-cyan-light transition-colors"
           >
             Book Now
@@ -1495,7 +1419,7 @@ function Navbar({
                 </a>
               ))}
               <Link
-                href="/book/haf"
+                href="/book/paid"
                 onClick={() => setMobileMenuOpen(false)}
                 className="mt-3 px-6 py-3 bg-cyan text-dark font-semibold rounded-full text-sm text-center"
               >
@@ -1511,10 +1435,6 @@ function Navbar({
 
 /* ─── FAQ Section ─── */
 const FAQ_ITEMS = [
-  {
-    q: 'What is HAF and who is it for?',
-    a: 'The Holiday Activities and Food (HAF) programme provides free holiday camp places for children who receive benefits-related free school meals. You will need a valid HAF code from your council or school to book a free place.',
-  },
   {
     q: 'What are the camp timings?',
     a: 'All sessions run 10:00 AM to 2:00 PM. Drop-off is from 9:45 AM and collection is at 2:00 PM sharp.',
