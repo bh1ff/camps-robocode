@@ -61,10 +61,10 @@ interface CampData {
 
 function getAreaTypeBgLight(type: string): string {
   switch (type) {
-    case 'mechanical': return 'bg-blue-100 border-blue-400 text-blue-800';
-    case 'electronic': return 'bg-amber-100 border-amber-400 text-amber-800';
-    case 'physical': return 'bg-emerald-100 border-emerald-400 text-emerald-800';
-    default: return 'bg-gray-100 border-gray-300 text-gray-800';
+    case 'mechanical': return 'bg-blue-200 text-blue-900 border border-blue-400';
+    case 'electronic': return 'bg-amber-200 text-amber-900 border border-amber-400';
+    case 'physical': return 'bg-emerald-200 text-emerald-900 border border-emerald-400';
+    default: return 'bg-gray-200 text-gray-800 border border-gray-400';
   }
 }
 
@@ -765,9 +765,9 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
 
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm">
               <span className="font-semibold text-[#003439]">Legend:</span>
-              <span className="px-4 py-2 rounded-xl bg-blue-100 border border-blue-400 font-semibold text-blue-800">Mechanical</span>
-              <span className="px-4 py-2 rounded-xl bg-amber-100 border border-amber-400 font-semibold text-amber-800">Electronic</span>
-              <span className="px-4 py-2 rounded-xl bg-emerald-100 border border-emerald-400 font-semibold text-emerald-800">Physical</span>
+              <span className="px-4 py-2 rounded-xl bg-blue-200 border border-blue-400 font-semibold text-blue-900">Mechanical</span>
+              <span className="px-4 py-2 rounded-xl bg-amber-200 border border-amber-400 font-semibold text-amber-900">Electronic</span>
+              <span className="px-4 py-2 rounded-xl bg-emerald-200 border border-emerald-400 font-semibold text-emerald-900">Physical</span>
             </div>
           </div>
         )}

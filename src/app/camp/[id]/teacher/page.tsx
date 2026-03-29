@@ -45,10 +45,10 @@ interface CampData {
 
 function getAreaTypeBgLight(type: string): string {
   switch (type) {
-    case 'mechanical': return 'bg-blue-100 border-blue-400 text-blue-800';
-    case 'electronic': return 'bg-amber-100 border-amber-400 text-amber-800';
-    case 'physical': return 'bg-emerald-100 border-emerald-400 text-emerald-800';
-    default: return 'bg-gray-100 border-gray-300 text-gray-800';
+    case 'mechanical': return 'bg-blue-200 text-blue-900 border border-blue-400';
+    case 'electronic': return 'bg-amber-200 text-amber-900 border border-amber-400';
+    case 'physical': return 'bg-emerald-200 text-emerald-900 border border-emerald-400';
+    default: return 'bg-gray-200 text-gray-800 border border-gray-400';
   }
 }
 
