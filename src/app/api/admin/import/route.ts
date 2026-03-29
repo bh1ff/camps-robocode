@@ -294,9 +294,10 @@ export async function POST(request: NextRequest) {
       }
 
       // Create schedule rotation
+      // Paired rotation: A&B together, C&D together, E&F together
       const rotation: Record<string, number[]> = {
-        'A': [0, 1, 2], 'B': [0, 2, 1], 'C': [1, 2, 0],
-        'D': [1, 0, 2], 'E': [2, 0, 1], 'F': [2, 1, 0],
+        'A': [0, 1, 2], 'B': [0, 1, 2], 'C': [1, 2, 0],
+        'D': [1, 2, 0], 'E': [2, 0, 1], 'F': [2, 0, 1],
       };
 
       const dbGroups = await prisma.group.findMany({ where: { campId: camp.id } });

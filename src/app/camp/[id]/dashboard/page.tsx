@@ -61,14 +61,10 @@ interface CampData {
 
 function getAreaTypeBgLight(type: string): string {
   switch (type) {
-    case 'robotics': return 'bg-blue-100 border-blue-300';
-    case 'gamedev': return 'bg-green-100 border-green-300';
-    case '3dprinting': return 'bg-purple-100 border-purple-300';
-    case 'game': return 'bg-orange-100 border-orange-300';
-    case 'mechanical': return 'bg-blue-100 border-blue-300';
-    case 'electronic': return 'bg-yellow-100 border-yellow-300';
-    case 'physical': return 'bg-green-100 border-green-300';
-    default: return 'bg-gray-100 border-gray-300';
+    case 'mechanical': return 'bg-blue-100 border-blue-400 text-blue-800';
+    case 'electronic': return 'bg-amber-100 border-amber-400 text-amber-800';
+    case 'physical': return 'bg-emerald-100 border-emerald-400 text-emerald-800';
+    default: return 'bg-gray-100 border-gray-300 text-gray-800';
   }
 }
 
@@ -769,10 +765,9 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
 
             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm">
               <span className="font-semibold text-[#003439]">Legend:</span>
-              <span className="px-4 py-2 rounded-xl bg-blue-100 border border-blue-300 font-semibold text-blue-800">Robotics</span>
-              <span className="px-4 py-2 rounded-xl bg-green-100 border border-green-300 font-semibold text-green-800">Game Dev</span>
-              <span className="px-4 py-2 rounded-xl bg-purple-100 border border-purple-300 font-semibold text-purple-800">3D Printing</span>
-              <span className="px-4 py-2 rounded-xl bg-orange-100 border border-orange-300 font-semibold text-orange-800">Game Area</span>
+              <span className="px-4 py-2 rounded-xl bg-blue-100 border border-blue-400 font-semibold text-blue-800">Mechanical</span>
+              <span className="px-4 py-2 rounded-xl bg-amber-100 border border-amber-400 font-semibold text-amber-800">Electronic</span>
+              <span className="px-4 py-2 rounded-xl bg-emerald-100 border border-emerald-400 font-semibold text-emerald-800">Physical</span>
             </div>
           </div>
         )}

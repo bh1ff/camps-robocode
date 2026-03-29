@@ -15,6 +15,7 @@ interface Camp {
 export default function HomePage() {
   const [camps, setCamps] = useState<Camp[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -37,6 +38,22 @@ export default function HomePage() {
     );
   }
 
+  // Group camps by location
+  const locations = new Map<string, Camp[]>();
+  for (const camp of camps) {
+    const loc = camp.location || 'Other';
+    if (!locations.has(loc)) locations.set(loc, []);
+    locations.get(loc)!.push(camp);
+  }
+
+  // Sort camps within each location by date
+  for (const [, locCamps] of locations) {
+    locCamps.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+  }
+
+  const locationNames = Array.from(locations.keys());
+  const selectedCamps = selectedLocation ? locations.get(selectedLocation) || [] : [];
+
   return (
     <div className="min-h-screen robo-gradient flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -51,28 +68,62 @@ export default function HomePage() {
           <p className="text-[#05575c] opacity-70">Camp Management System</p>
         </div>
 
-        {camps.length > 0 ? (
-          <div className="space-y-4">
-            <h2 className="text-lg font-heading text-[#003439]">Select a Camp</h2>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto">
-              {camps.map(camp => (
-                <button
-                  key={camp.id}
-                  onClick={() => router.push(`/camp/${camp.id}`)}
-                  className="w-full p-4 bg-[#f0f7f7] rounded-xl text-left hover:bg-[#00adb3]/10 transition-colors border-2 border-transparent hover:border-[#00adb3]"
-                >
-                  <h3 className="font-semibold text-[#003439]">{camp.name}</h3>
-                  {camp.location && (
-                    <p className="text-sm text-[#00adb3] font-medium">{camp.location}</p>
-                  )}
-                  <p className="text-sm text-[#05575c]/70">
-                    {new Date(camp.startDate).toLocaleDateString()} - {new Date(camp.endDate).toLocaleDateString()}
-                  </p>
-                  <p className="text-xs text-[#05575c]/50 mt-1">{camp.kidCount} campers</p>
-                </button>
-              ))}
-            </div>
-          </div>
+        {locationNames.length > 0 ? (
+          <>
+            {!selectedLocation ? (
+              <div className="space-y-4">
+                <h2 className="text-lg font-heading text-[#003439]">Select Location</h2>
+                <div className="space-y-3">
+                  {locationNames.map(loc => {
+                    const locCamps = locations.get(loc)!;
+                    const totalKids = locCamps.reduce((sum, c) => sum + c.kidCount, 0);
+                    return (
+                      <button
+                        key={loc}
+                        onClick={() => setSelectedLocation(loc)}
+                        className="w-full p-4 bg-[#f0f7f7] rounded-xl text-left hover:bg-[#00adb3]/10 transition-colors border-2 border-transparent hover:border-[#00adb3]"
+                      >
+                        <h3 className="font-semibold text-[#003439] text-lg">{loc}</h3>
+                        <p className="text-sm text-[#05575c]/70">
+                          {locCamps.length} day{locCamps.length !== 1 ? 's' : ''} &middot; {totalKids} campers total
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setSelectedLocation(null)}
+                    className="w-8 h-8 rounded-lg bg-[#f0f7f7] flex items-center justify-center hover:bg-[#00adb3]/10 transition-colors"
+                  >
+                    <svg className="w-5 h-5 text-[#003439]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+                  <h2 className="text-lg font-heading text-[#003439]">{selectedLocation}</h2>
+                </div>
+                <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                  {selectedCamps.map(camp => {
+                    const date = new Date(camp.startDate);
+                    const dayName = date.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+                    return (
+                      <button
+                        key={camp.id}
+                        onClick={() => router.push(`/camp/${camp.id}`)}
+                        className="w-full p-4 bg-[#f0f7f7] rounded-xl text-left hover:bg-[#00adb3]/10 transition-colors border-2 border-transparent hover:border-[#00adb3]"
+                      >
+                        <h3 className="font-semibold text-[#003439]">{dayName}</h3>
+                        <p className="text-xs text-[#05575c]/50 mt-1">{camp.kidCount} campers</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </>
         ) : (
           <div className="text-center py-8">
             <div className="w-16 h-16 mx-auto mb-4 bg-[#00adb3]/10 rounded-xl flex items-center justify-center">
@@ -81,9 +132,7 @@ export default function HomePage() {
               </svg>
             </div>
             <h3 className="text-lg font-heading text-[#003439] mb-2">No Camps Available</h3>
-            <p className="text-sm text-[#05575c]/70 mb-4">
-              Ask an Admin to create a camp
-            </p>
+            <p className="text-sm text-[#05575c]/70 mb-4">Ask an Admin to create a camp</p>
           </div>
         )}
 
