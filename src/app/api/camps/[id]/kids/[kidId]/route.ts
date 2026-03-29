@@ -12,23 +12,40 @@ export async function PATCH(
     // Handle checkedIn / checkedOut on ChildDayBooking
     if (data.checkedIn !== undefined || data.checkedOut !== undefined) {
       // Find the day booking for this child in this camp
-      const dayBooking = await prisma.childDayBooking.findFirst({
+      let dayBooking = await prisma.childDayBooking.findFirst({
         where: {
           childId: kidId,
           campDay: { campId },
         },
       });
 
-      if (dayBooking) {
-        const bookingUpdate: Record<string, unknown> = {};
-        if (data.checkedIn !== undefined) bookingUpdate.checkedIn = data.checkedIn;
-        if (data.checkedOut !== undefined) bookingUpdate.checkedOut = data.checkedOut;
-
-        await prisma.childDayBooking.update({
-          where: { id: dayBooking.id },
-          data: bookingUpdate,
+      // If no day booking exists, create one
+      if (!dayBooking) {
+        const campDay = await prisma.campDay.findFirst({
+          where: { campId },
         });
+        if (campDay) {
+          dayBooking = await prisma.childDayBooking.create({
+            data: {
+              childId: kidId,
+              campDayId: campDay.id,
+              checkedIn: data.checkedIn ?? false,
+              checkedOut: data.checkedOut ?? false,
+            },
+          });
+          return NextResponse.json({ success: true });
+        }
+        return NextResponse.json({ error: 'No camp day found' }, { status: 404 });
       }
+
+      const bookingUpdate: Record<string, unknown> = {};
+      if (data.checkedIn !== undefined) bookingUpdate.checkedIn = data.checkedIn;
+      if (data.checkedOut !== undefined) bookingUpdate.checkedOut = data.checkedOut;
+
+      await prisma.childDayBooking.update({
+        where: { id: dayBooking.id },
+        data: bookingUpdate,
+      });
 
       return NextResponse.json({ success: true });
     }

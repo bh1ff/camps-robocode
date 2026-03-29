@@ -17,28 +17,32 @@ export async function POST(
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
+    // Use findFirst + create/update/delete instead of upsert for libsql compatibility
+    const existing = await prisma.attendance.findFirst({
+      where: { childId: kidId, sessionId: session.id },
+    });
+
     if (attended) {
-      await prisma.attendance.upsert({
-        where: {
-          childId_sessionId: {
+      if (existing) {
+        await prisma.attendance.update({
+          where: { id: existing.id },
+          data: { attended: true },
+        });
+      } else {
+        await prisma.attendance.create({
+          data: {
             childId: kidId,
             sessionId: session.id,
+            attended: true,
           },
-        },
-        update: { attended: true },
-        create: {
-          childId: kidId,
-          sessionId: session.id,
-          attended: true,
-        },
-      });
+        });
+      }
     } else {
-      await prisma.attendance.deleteMany({
-        where: {
-          childId: kidId,
-          sessionId: session.id,
-        },
-      });
+      if (existing) {
+        await prisma.attendance.delete({
+          where: { id: existing.id },
+        });
+      }
     }
 
     return NextResponse.json({ success: true });
@@ -71,20 +75,23 @@ export async function PUT(
 
     if (markPresent) {
       for (const child of group.children) {
-        await prisma.attendance.upsert({
-          where: {
-            childId_sessionId: {
+        const existing = await prisma.attendance.findFirst({
+          where: { childId: child.id, sessionId: session.id },
+        });
+        if (existing) {
+          await prisma.attendance.update({
+            where: { id: existing.id },
+            data: { attended: true },
+          });
+        } else {
+          await prisma.attendance.create({
+            data: {
               childId: child.id,
               sessionId: session.id,
+              attended: true,
             },
-          },
-          update: { attended: true },
-          create: {
-            childId: child.id,
-            sessionId: session.id,
-            attended: true,
-          },
-        });
+          });
+        }
       }
     } else {
       await prisma.attendance.deleteMany({
@@ -98,6 +105,6 @@ export async function PUT(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Bulk attendance error:', error);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
