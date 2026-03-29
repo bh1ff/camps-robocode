@@ -1,4 +1,7 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env.local' });
+dotenv.config();
+
 import { PrismaClient } from '@prisma/client';
 import { PrismaLibSql } from '@prisma/adapter-libsql';
 import bcrypt from 'bcryptjs';
@@ -204,6 +207,13 @@ const shirleyDays: { day: string; date: string; kids: Kid[] }[] = [
   },
 ];
 
+function splitName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(/\s+/);
+  const firstName = parts[0];
+  const lastName = parts.slice(1).join(' ');
+  return { firstName, lastName: lastName || firstName };
+}
+
 function autoGroup(kids: Kid[]) {
   const sorted = [...kids].sort((a, b) => a.age - b.age);
   const groupNames = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -231,50 +241,164 @@ function autoGroup(kids: Kid[]) {
   return groups;
 }
 
-async function createCampDay(dayData: typeof shirleyDays[0]) {
-  const camp = await prisma.camp.create({
+async function main() {
+  console.log('Seeding Shirley Week 1 - one camp per day...\n');
+
+  // Create admin user
+  const hashedPassword = await bcrypt.hash('admin', 10);
+  await prisma.adminUser.upsert({
+    where: { email: 'admin@robocode.uk' },
+    update: {},
+    create: {
+      email: 'admin@robocode.uk',
+      name: 'Admin',
+      password: hashedPassword,
+      role: 'superadmin',
+    },
+  });
+  console.log('Admin user created: admin@robocode.uk / admin');
+
+  // Create location
+  const location = await prisma.location.create({
     data: {
-      name: `Shirley - ${dayData.day}`,
-      description: `HAF Shirley Week 1 - ${dayData.day}`,
-      startDate: new Date(dayData.date),
-      endDate: new Date(dayData.date),
-      adminPassword: 'robocamp2026',
-      teacherPassword: 'teacher2026',
-      lunchTime: '12:00-13:00',
+      name: 'Shirley',
+      slug: 'shirley',
+      address: 'Shirley, Southampton',
+      region: 'Southampton',
+      capacityPerDay: 50,
+      hafSeatsTotal: 50,
     },
   });
 
+  // Create season
+  const season = await prisma.season.create({
+    data: {
+      title: 'Easter 2026',
+      slug: 'easter-2026',
+      startDate: new Date('2026-03-30'),
+      endDate: new Date('2026-04-09'),
+      active: true,
+    },
+  });
+
+  // Create one camp for the whole week
+  const camp = await prisma.camp.create({
+    data: {
+      name: 'Shirley - Week 1',
+      description: 'HAF Shirley Easter 2026 Week 1',
+      startDate: new Date('2026-03-30'),
+      endDate: new Date('2026-04-02'),
+      adminPassword: 'robocamp2026',
+      teacherPassword: 'teacher2026',
+      lunchTime: '12:00-13:00',
+      locationId: location.id,
+      seasonId: season.id,
+    },
+  });
+
+  // Create camp days
+  const campDays = [];
+  for (const dayData of shirleyDays) {
+    const campDay = await prisma.campDay.create({
+      data: {
+        date: new Date(dayData.date),
+        dayLabel: dayData.day,
+        weekNumber: 1,
+        campId: camp.id,
+      },
+    });
+    campDays.push({ campDay, dayData });
+  }
+
+  // Create sessions
   const sessions = await Promise.all([
     prisma.session.create({ data: { name: 'Session 1', time: '10:00-11:00', order: 1, campId: camp.id } }),
     prisma.session.create({ data: { name: 'Session 2', time: '11:00-12:00', order: 2, campId: camp.id } }),
     prisma.session.create({ data: { name: 'Session 3', time: '13:00-14:00', order: 3, campId: camp.id } }),
   ]);
 
+  // Create areas
   const areas = await Promise.all([
     prisma.area.create({ data: { name: 'Mechanical', type: 'mechanical', campId: camp.id } }),
     prisma.area.create({ data: { name: 'Electronic', type: 'electronic', campId: camp.id } }),
     prisma.area.create({ data: { name: 'Physical', type: 'physical', campId: camp.id } }),
   ]);
 
-  const groups = autoGroup(dayData.kids);
+  // Collect all unique kids across all days
+  const allKidsMap = new Map<string, Kid>();
+  for (const dayData of shirleyDays) {
+    for (const kid of dayData.kids) {
+      allKidsMap.set(kid.name, kid);
+    }
+  }
+  const allKids = Array.from(allKidsMap.values());
+
+  // Group all unique kids
+  const groups = autoGroup(allKids);
+
+  // Create a booking for HAF kids
+  const booking = await prisma.booking.create({
+    data: {
+      type: 'haf',
+      status: 'confirmed',
+      parentFirstName: 'HAF',
+      parentLastName: 'Import',
+      parentEmail: 'haf@robocode.uk',
+      parentPhone: '',
+      address: '',
+      postcode: '',
+      campId: camp.id,
+    },
+  });
+
+  // Create groups and children
+  const kidToChildId = new Map<string, string>();
 
   for (const [groupName, groupData] of Object.entries(groups)) {
-    await prisma.group.create({
+    const group = await prisma.group.create({
       data: {
         name: groupName,
         ageRange: groupData.ageRange,
         campId: camp.id,
-        kids: {
-          create: groupData.kids.map(k => ({
-            name: k.name,
-            age: k.age,
-            allergies: k.allergies,
-          })),
-        },
       },
     });
+
+    for (const kid of groupData.kids) {
+      const { firstName, lastName } = splitName(kid.name);
+      const child = await prisma.child.create({
+        data: {
+          firstName,
+          lastName,
+          age: kid.age,
+          hasAllergies: !!kid.allergies,
+          allergyDetails: kid.allergies,
+          groupId: group.id,
+          bookingId: booking.id,
+        },
+      });
+      kidToChildId.set(kid.name, child.id);
+    }
   }
 
+  // Create ChildDayBooking records for each day
+  for (const { campDay, dayData } of campDays) {
+    let dayCount = 0;
+    for (const kid of dayData.kids) {
+      const childId = kidToChildId.get(kid.name);
+      if (childId) {
+        await prisma.childDayBooking.create({
+          data: {
+            childId,
+            campDayId: campDay.id,
+          },
+        });
+        dayCount++;
+      }
+    }
+    console.log(`  ${dayData.day}: ${dayCount} kids booked`);
+  }
+
+  // Create schedule rotation
   const rotation: Record<string, number[]> = {
     'A': [0, 1, 2],
     'B': [0, 2, 1],
@@ -301,24 +425,9 @@ async function createCampDay(dayData: typeof shirleyDays[0]) {
   const groupSummary = Object.entries(groups)
     .map(([n, g]) => `${n}(${g.ageRange}):${g.kids.length}`)
     .join(', ');
-  console.log(`  ${camp.name} - ${dayData.kids.length} kids [${groupSummary}]`);
-}
-
-async function main() {
-  console.log('Seeding Shirley Week 1 - one camp per day...\n');
-
-  const hashedPassword = await bcrypt.hash('admin', 10);
-  await prisma.superAdmin.upsert({
-    where: { email: 'admin@robocode.uk' },
-    update: {},
-    create: { email: 'admin@robocode.uk', password: hashedPassword },
-  });
-
-  for (const dayData of shirleyDays) {
-    await createCampDay(dayData);
-  }
-
-  console.log('\nDone! 4 day-camps created for Shirley Week 1');
+  console.log(`\nGroups: ${groupSummary}`);
+  console.log(`Total unique kids: ${allKids.length}`);
+  console.log('\nDone! Shirley Week 1 camp created with 4 days.');
 }
 
 main()

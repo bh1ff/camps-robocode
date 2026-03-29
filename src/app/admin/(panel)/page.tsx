@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CalendarDays, Users, CreditCard, MapPin, ClipboardList, TrendingUp } from 'lucide-react';
+import { CalendarDays, Users, CreditCard, MapPin, ClipboardList, TrendingUp, Download } from 'lucide-react';
+import { useAdmin } from '@/components/admin/AdminShell';
 
 interface DashboardData {
   stats: {
@@ -31,6 +32,7 @@ interface DashboardData {
 }
 
 export default function AdminDashboard() {
+  const admin = useAdmin();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,12 +66,23 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#003439]">Dashboard</h1>
-        {activeSeason && (
-          <p className="text-sm text-[#05575c]/60 mt-1">
-            Active season: <span className="font-semibold text-[#003439]">{activeSeason.title}</span>
-          </p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#003439]">Dashboard</h1>
+          {activeSeason && (
+            <p className="text-sm text-[#05575c]/60 mt-1">
+              Active season: <span className="font-semibold text-[#003439]">{activeSeason.title}</span>
+            </p>
+          )}
+        </div>
+        {admin?.role === 'superadmin' && (
+          <a
+            href="/api/admin/template"
+            className="flex items-center gap-2 px-4 py-2 bg-[#003439] text-white text-sm font-medium rounded-xl hover:bg-[#004a50] transition-colors"
+          >
+            <Download size={16} />
+            Import Template
+          </a>
         )}
       </div>
 
