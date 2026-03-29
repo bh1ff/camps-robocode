@@ -6,9 +6,34 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string; kidId: string }> }
 ) {
   try {
-    const { kidId } = await params;
+    const { id: campId, kidId } = await params;
     const data = await request.json();
 
+    // Handle checkedIn / checkedOut on ChildDayBooking
+    if (data.checkedIn !== undefined || data.checkedOut !== undefined) {
+      // Find the day booking for this child in this camp
+      const dayBooking = await prisma.childDayBooking.findFirst({
+        where: {
+          childId: kidId,
+          campDay: { campId },
+        },
+      });
+
+      if (dayBooking) {
+        const bookingUpdate: Record<string, unknown> = {};
+        if (data.checkedIn !== undefined) bookingUpdate.checkedIn = data.checkedIn;
+        if (data.checkedOut !== undefined) bookingUpdate.checkedOut = data.checkedOut;
+
+        await prisma.childDayBooking.update({
+          where: { id: dayBooking.id },
+          data: bookingUpdate,
+        });
+      }
+
+      return NextResponse.json({ success: true });
+    }
+
+    // Handle allergy updates on Child
     const updateData: Record<string, unknown> = {};
     if (data.allergies !== undefined) {
       updateData.hasAllergies = !!data.allergies;

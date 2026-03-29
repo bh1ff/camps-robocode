@@ -18,6 +18,7 @@ export async function GET(
                 attendances: {
                   include: { session: true },
                 },
+                dayBookings: true,
               },
             },
           },
@@ -63,17 +64,20 @@ export async function GET(
       groups[group.name] = {
         ageRange: group.ageRange,
         color: group.color,
-        kids: group.children.map((child) => ({
-          id: child.id,
-          name: `${child.firstName} ${child.lastName}`,
-          age: child.age,
-          allergies: child.allergyDetails || '',
-          hasSEND: child.hasSEND,
-          hasEHCP: child.hasEHCP,
-          checkedIn: false,
-          checkedOut: false,
-          attended: child.attendances.map((a) => `session-${a.session.order}`),
-        })),
+        kids: group.children.map((child) => {
+          const dayBooking = child.dayBookings[0];
+          return {
+            id: child.id,
+            name: `${child.firstName} ${child.lastName}`,
+            age: child.age,
+            allergies: child.allergyDetails || '',
+            hasSEND: child.hasSEND,
+            hasEHCP: child.hasEHCP,
+            checkedIn: dayBooking?.checkedIn ?? false,
+            checkedOut: dayBooking?.checkedOut ?? false,
+            attended: child.attendances.map((a) => `session-${a.session.order}`),
+          };
+        }),
       };
     }
 
