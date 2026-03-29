@@ -10,6 +10,7 @@
   --color-pink-light: #ff98f4;
   --color-orange: #ff9752;
   --color-surface: #f6f9f9;
+  --font-heading: var(--font-display), ui-sans-serif, system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
@@ -19,7 +20,50 @@ html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 body {
   background: #f6f9f9;
   color: #003439;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
+}
+
+/* Robocode utility classes */
+.robo-gradient {
+  background: linear-gradient(135deg, #003439 0%, #00696e 50%, #00adb3 100%);
+}
+
+.robo-gradient-light {
+  background: linear-gradient(135deg, #00858a 0%, #00adb3 100%);
+}
+
+.robo-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 52, 57, 0.08), 0 4px 12px rgba(0, 52, 57, 0.04);
+  border: 1px solid rgba(0, 52, 57, 0.06);
+}
+
+.robo-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #e0f7f7;
+  color: #003439;
+}
+
+.robo-btn {
+  background: linear-gradient(135deg, #00858a 0%, #00adb3 100%);
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+.robo-btn:hover {
+  opacity: 0.9;
+}
+.robo-btn:active {
+  transform: scale(0.98);
 }
 
 ::selection {
