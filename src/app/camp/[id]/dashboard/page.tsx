@@ -105,6 +105,10 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
       return;
     }
     loadData();
+
+    // Auto-refresh every 15 seconds
+    const interval = setInterval(loadData, 15000);
+    return () => clearInterval(interval);
   }, [campId, router, loadData]);
 
   const handleLogout = () => {

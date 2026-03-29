@@ -74,6 +74,10 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
       return;
     }
     loadData();
+
+    // Auto-refresh every 15 seconds to pick up check-ins from admin
+    const interval = setInterval(loadData, 15000);
+    return () => clearInterval(interval);
   }, [campId, router, loadData]);
 
   const handleLogout = () => {
@@ -312,6 +316,9 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
                                         }`}
                                       >
                                         <span className="text-[#003439] flex items-center gap-2">
+                                          {!kid.checkedIn && (
+                                            <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" title="Not checked in" />
+                                          )}
                                           {kid.name}
                                           {kid.allergies && (
                                             <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
@@ -344,6 +351,33 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
             )}
+
+            {/* Check-in summary */}
+            {(() => {
+              const allKids = Object.values(data.groups).flatMap(g => g.kids);
+              const checkedInCount = allKids.filter(k => k.checkedIn).length;
+              return (
+                <div className="robo-card p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-[#003439]">Check-In Status</h3>
+                      <p className="text-sm text-[#05575c]/70">{checkedInCount} of {allKids.length} campers checked in</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-32 bg-gray-200 rounded-full h-2.5">
+                      <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${allKids.length > 0 ? (checkedInCount / allKids.length) * 100 : 0}%` }}></div>
+                    </div>
+                    <span className="text-sm font-semibold text-[#003439]">{allKids.length > 0 ? Math.round((checkedInCount / allKids.length) * 100) : 0}%</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Lunch Info */}
             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 flex items-center gap-3">
@@ -427,6 +461,9 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
                                   }`}
                                 >
                                   <span className="text-[#003439] flex items-center gap-2">
+                                    {!kid.checkedIn && (
+                                      <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" title="Not checked in" />
+                                    )}
                                     {kid.name}
                                     {kid.allergies && (
                                       <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
