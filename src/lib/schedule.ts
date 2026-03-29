@@ -77,6 +77,9 @@ export function getAreaTypeColor(type: string): string {
     case 'gamedev': return 'bg-green-500';
     case '3dprinting': return 'bg-purple-500';
     case 'game': return 'bg-orange-500';
+    case 'mechanical': return 'bg-blue-500';
+    case 'electronic': return 'bg-yellow-500';
+    case 'physical': return 'bg-green-500';
     default: return 'bg-gray-500';
   }
 }
@@ -87,6 +90,9 @@ export function getAreaTypeBgLight(type: string): string {
     case 'gamedev': return 'bg-green-100 border-green-300';
     case '3dprinting': return 'bg-purple-100 border-purple-300';
     case 'game': return 'bg-orange-100 border-orange-300';
+    case 'mechanical': return 'bg-blue-100 border-blue-300';
+    case 'electronic': return 'bg-yellow-100 border-yellow-300';
+    case 'physical': return 'bg-green-100 border-green-300';
     default: return 'bg-gray-100 border-gray-300';
   }
 }
