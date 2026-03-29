@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No file uploaded' }, { status: 400 });
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const arrayBuffer = await file.arrayBuffer();
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+    await workbook.xlsx.load(arrayBuffer);
 
     const sheet = workbook.getWorksheet('Camp Import Template') || workbook.worksheets[0];
     if (!sheet) {
