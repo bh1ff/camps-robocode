@@ -23,17 +23,17 @@ interface Group {
   kids: Kid[];
 }
 
-const GROUP_COLORS: Record<string, { bg: string; text: string; ring: string; band: string }> = {
-  purple: { bg: 'bg-purple-200', text: 'text-purple-800', ring: 'ring-purple-500', band: 'bg-purple-500' },
-  orange: { bg: 'bg-orange-200', text: 'text-orange-800', ring: 'ring-orange-500', band: 'bg-orange-500' },
-  pink: { bg: 'bg-pink-200', text: 'text-pink-800', ring: 'ring-pink-500', band: 'bg-pink-500' },
-  green: { bg: 'bg-green-200', text: 'text-green-800', ring: 'ring-green-500', band: 'bg-green-500' },
-  red: { bg: 'bg-red-200', text: 'text-red-800', ring: 'ring-red-500', band: 'bg-red-500' },
-  yellow: { bg: 'bg-yellow-200', text: 'text-yellow-800', ring: 'ring-yellow-500', band: 'bg-yellow-500' },
+const GROUP_COLORS: Record<string, { bg: string; text: string; ring: string; band: string; borderL: string; bgLight: string }> = {
+  purple: { bg: 'bg-purple-200', text: 'text-purple-800', ring: 'ring-purple-500', band: 'bg-purple-500', borderL: 'border-l-purple-500', bgLight: 'bg-purple-50' },
+  orange: { bg: 'bg-orange-200', text: 'text-orange-800', ring: 'ring-orange-500', band: 'bg-orange-500', borderL: 'border-l-orange-500', bgLight: 'bg-orange-50' },
+  pink: { bg: 'bg-pink-200', text: 'text-pink-800', ring: 'ring-pink-500', band: 'bg-pink-500', borderL: 'border-l-pink-500', bgLight: 'bg-pink-50' },
+  green: { bg: 'bg-green-200', text: 'text-green-800', ring: 'ring-green-500', band: 'bg-green-500', borderL: 'border-l-green-500', bgLight: 'bg-green-50' },
+  red: { bg: 'bg-red-200', text: 'text-red-800', ring: 'ring-red-500', band: 'bg-red-500', borderL: 'border-l-red-500', bgLight: 'bg-red-50' },
+  yellow: { bg: 'bg-yellow-200', text: 'text-yellow-800', ring: 'ring-yellow-500', band: 'bg-yellow-500', borderL: 'border-l-yellow-500', bgLight: 'bg-yellow-50' },
 };
 
 function getGroupColor(color: string) {
-  return GROUP_COLORS[color] || GROUP_COLORS.blue;
+  return GROUP_COLORS[color] || GROUP_COLORS.purple;
 }
 
 interface Area {
@@ -767,13 +767,13 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 {Object.entries(data.schedule.rotation).map(([groupId, rotation]) => {
                   const gc = getGroupColor(data.groups[groupId]?.color || 'blue');
                   return (
-                  <tr key={groupId} className="border-b border-[#00adb3]/10 hover:bg-[#00adb3]/5">
+                  <tr key={groupId} className={`border-b border-[#00adb3]/10 border-l-4 ${gc.borderL} ${gc.bgLight}`}>
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-2">
-                        <span className={`w-4 h-4 rounded-full ${gc.band} ring-2 ring-white flex-shrink-0`} />
+                        <span className={`w-5 h-5 rounded-full ${gc.band} ring-2 ring-white flex-shrink-0`} />
                         <div>
                           <span className="font-semibold text-[#003439]">Group {groupId}</span>
-                          <p className="text-xs text-[#05575c]/60 capitalize">{data.groups[groupId]?.color} band</p>
+                          <p className="text-xs capitalize font-medium ${gc.text}">{data.groups[groupId]?.color} band</p>
                         </div>
                       </div>
                     </td>

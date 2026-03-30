@@ -44,13 +44,13 @@ interface CampData {
   };
 }
 
-const GROUP_COLORS: Record<string, { bg: string; text: string; band: string }> = {
-  purple: { bg: 'bg-purple-200', text: 'text-purple-800', band: 'bg-purple-500' },
-  orange: { bg: 'bg-orange-200', text: 'text-orange-800', band: 'bg-orange-500' },
-  pink: { bg: 'bg-pink-200', text: 'text-pink-800', band: 'bg-pink-500' },
-  green: { bg: 'bg-green-200', text: 'text-green-800', band: 'bg-green-500' },
-  red: { bg: 'bg-red-200', text: 'text-red-800', band: 'bg-red-500' },
-  yellow: { bg: 'bg-yellow-200', text: 'text-yellow-800', band: 'bg-yellow-500' },
+const GROUP_COLORS: Record<string, { bg: string; text: string; band: string; borderL: string; bgLight: string }> = {
+  purple: { bg: 'bg-purple-200', text: 'text-purple-800', band: 'bg-purple-500', borderL: 'border-l-purple-500', bgLight: 'bg-purple-50' },
+  orange: { bg: 'bg-orange-200', text: 'text-orange-800', band: 'bg-orange-500', borderL: 'border-l-orange-500', bgLight: 'bg-orange-50' },
+  pink: { bg: 'bg-pink-200', text: 'text-pink-800', band: 'bg-pink-500', borderL: 'border-l-pink-500', bgLight: 'bg-pink-50' },
+  green: { bg: 'bg-green-200', text: 'text-green-800', band: 'bg-green-500', borderL: 'border-l-green-500', bgLight: 'bg-green-50' },
+  red: { bg: 'bg-red-200', text: 'text-red-800', band: 'bg-red-500', borderL: 'border-l-red-500', bgLight: 'bg-red-50' },
+  yellow: { bg: 'bg-yellow-200', text: 'text-yellow-800', band: 'bg-yellow-500', borderL: 'border-l-yellow-500', bgLight: 'bg-yellow-50' },
 };
 
 function getGroupColor(color: string) {
@@ -297,10 +297,10 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
                             const group = data.groups[groupId];
                             const attendedCount = group.kids.filter(k => k.attended.includes(sessionId)).length;
                             return (
-                              <div key={groupId} className="bg-[#f0f7f7] rounded-xl p-4">
+                              <div key={groupId} className={`rounded-xl p-4 border-l-4 ${getGroupColor(group.color).borderL} ${getGroupColor(group.color).bgLight}`}>
                                 <div className="flex items-center justify-between mb-3">
                                   <h4 className="font-semibold text-[#003439] flex items-center gap-2">
-                                    <span className={`w-4 h-4 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white flex-shrink-0`} />
+                                    <span className={`w-5 h-5 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white flex-shrink-0`} />
                                     Group {groupId} <span className="font-normal text-[#05575c]/60 capitalize">({group.color} band, {group.ageRange})</span>
                                   </h4>
                                   <div className="flex items-center gap-2">
@@ -412,10 +412,10 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
         {viewMode === 'groups' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(data.groups).map(([groupId, group]) => (
-              <div key={groupId} className="robo-card p-6">
+              <div key={groupId} className={`robo-card p-6 border-l-4 ${getGroupColor(group.color).borderL}`}>
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-2">
-                    <span className={`w-5 h-5 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white flex-shrink-0`} />
+                    <span className={`w-6 h-6 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white flex-shrink-0`} />
                     <div>
                       <h3 className="text-xl font-heading text-[#003439]">Group {groupId}</h3>
                       <p className="text-sm text-[#05575c]/60 capitalize">{group.color} band | Ages {group.ageRange} | {group.kids.length} campers</p>
