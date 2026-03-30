@@ -14,6 +14,7 @@ interface Kid {
   checkedIn: boolean;
   checkedOut: boolean;
   attended: string[];
+  days: string[];
 }
 
 interface Group {
@@ -22,15 +23,13 @@ interface Group {
   kids: Kid[];
 }
 
-const GROUP_COLORS: Record<string, { bg: string; text: string; ring: string }> = {
-  red: { bg: 'bg-red-100', text: 'text-red-700', ring: 'ring-red-400' },
-  blue: { bg: 'bg-blue-100', text: 'text-blue-700', ring: 'ring-blue-400' },
-  green: { bg: 'bg-green-100', text: 'text-green-700', ring: 'ring-green-400' },
-  yellow: { bg: 'bg-yellow-100', text: 'text-yellow-700', ring: 'ring-yellow-400' },
-  purple: { bg: 'bg-purple-100', text: 'text-purple-700', ring: 'ring-purple-400' },
-  orange: { bg: 'bg-orange-100', text: 'text-orange-700', ring: 'ring-orange-400' },
-  pink: { bg: 'bg-pink-100', text: 'text-pink-700', ring: 'ring-pink-400' },
-  cyan: { bg: 'bg-cyan-100', text: 'text-cyan-700', ring: 'ring-cyan-400' },
+const GROUP_COLORS: Record<string, { bg: string; text: string; ring: string; band: string }> = {
+  purple: { bg: 'bg-purple-200', text: 'text-purple-800', ring: 'ring-purple-500', band: 'bg-purple-500' },
+  orange: { bg: 'bg-orange-200', text: 'text-orange-800', ring: 'ring-orange-500', band: 'bg-orange-500' },
+  pink: { bg: 'bg-pink-200', text: 'text-pink-800', ring: 'ring-pink-500', band: 'bg-pink-500' },
+  green: { bg: 'bg-green-200', text: 'text-green-800', ring: 'ring-green-500', band: 'bg-green-500' },
+  red: { bg: 'bg-red-200', text: 'text-red-800', ring: 'ring-red-500', band: 'bg-red-500' },
+  yellow: { bg: 'bg-yellow-200', text: 'text-yellow-800', ring: 'ring-yellow-500', band: 'bg-yellow-500' },
 };
 
 function getGroupColor(color: string) {
@@ -342,16 +341,19 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                     <button
                       key={groupId}
                       onClick={() => setGroupModal(groupId)}
-                      className="p-4 bg-[#f0f7f7] rounded-xl text-left hover:shadow-md hover:bg-[#00adb3]/10 transition-all"
+                      className={`p-4 rounded-xl text-left hover:shadow-md transition-all border-l-4 ${gc.bg} border-l-current`}
+                      style={{ borderLeftColor: 'inherit' }}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className={`w-4 h-4 rounded-full ${gc.bg} ring-2 ${gc.ring}`} />
-                          <h3 className="font-semibold text-[#003439]">Group {groupId}</h3>
+                          <span className={`w-5 h-5 rounded-full ${gc.band} ring-2 ring-white`} />
+                          <h3 className={`font-semibold ${gc.text}`}>Group {groupId}</h3>
                         </div>
-                        <span className="robo-badge">{group.kids.length}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${gc.band} text-white`}>{group.kids.length}</span>
                       </div>
-                      <p className="text-xs text-[#05575c]/70 mb-2">Ages {group.ageRange}</p>
+                      <p className="text-xs text-[#003439]/70 mb-2 capitalize">
+                        {group.color} band | Ages {group.ageRange}
+                      </p>
                       <div className="flex items-center gap-2">
                         <div className="flex-1 bg-white rounded-full h-2">
                           <div className="bg-[#00adb3] h-2 rounded-full" style={{ width: `${(groupCheckedIn / group.kids.length) * 100}%` }}></div>
@@ -513,7 +515,12 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="text-2xl font-heading text-[#003439]">{selectedKid.kid.name}</h3>
-                    <p className="text-[#05575c]/70">Age {selectedKid.kid.age} | Group {selectedKid.groupId}</p>
+                    <p className="text-[#05575c]/70">
+                      Age {selectedKid.kid.age} | Group {selectedKid.groupId}
+                      {selectedKid.kid.days.length > 0 && (
+                        <span className="ml-1">({selectedKid.kid.days.join(', ')})</span>
+                      )}
+                    </p>
 
                     {(selectedKid.kid.hasSEND || selectedKid.kid.hasEHCP) && (
                       <div className="flex gap-2 mt-2">
@@ -650,7 +657,12 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                           })}
                         </div>
                         <div>
-                          <p className="font-semibold text-[#003439]">{kid.name}</p>
+                          <p className="font-semibold text-[#003439]">
+                            {kid.name}
+                            {kid.days.length > 0 && (
+                              <span className="text-xs font-normal text-[#05575c]/60 ml-1">({kid.days.join(', ')})</span>
+                            )}
+                          </p>
                           <p className="text-xs text-[#05575c]/60">
                             Group {groupId} | Age {kid.age}
                             {kid.allergies && <span className="text-red-500 ml-1">| {kid.allergies}</span>}
@@ -688,13 +700,13 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                       >
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <span className={`w-4 h-4 rounded-full ${getGroupColor(group.color).bg} ring-2 ${getGroupColor(group.color).ring}`} />
+                            <span className={`w-5 h-5 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white`} />
                             <div>
                               <h3 className="font-heading text-lg text-[#003439]">Group {groupId}</h3>
-                              <p className="text-xs text-[#05575c]/70">Ages {group.ageRange}</p>
+                              <p className="text-xs text-[#05575c]/70 capitalize">{group.color} band | Ages {group.ageRange}</p>
                             </div>
                           </div>
-                          <span className="robo-badge">{group.kids.length}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${getGroupColor(group.color).band} text-white`}>{group.kids.length}</span>
                         </div>
                         <div className="space-y-2 min-h-[200px] max-h-[400px] overflow-y-auto">
                           {group.kids.map((kid, index) => (
@@ -711,7 +723,10 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                                   <div className="flex justify-between items-center">
                                     <div>
                                       <span className="font-semibold text-[#003439]">{kid.name}</span>
-                                      <p className="text-xs text-[#05575c]/60">Age {kid.age}</p>
+                                      <p className="text-xs text-[#05575c]/60">
+                                        Age {kid.age}
+                                        {kid.days.length > 0 && <span className="ml-1">({kid.days.join(', ')})</span>}
+                                      </p>
                                     </div>
                                     <div className="flex gap-1">
                                       {kid.checkedIn && <span className="w-2.5 h-2.5 rounded-full bg-green-500"></span>}
@@ -817,7 +832,10 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 >
                   <div>
                     <p className="font-semibold text-[#003439]">{kid.name}</p>
-                    <p className="text-xs text-[#05575c]/60">Age {kid.age}</p>
+                    <p className="text-xs text-[#05575c]/60">
+                      Age {kid.age}
+                      {kid.days.length > 0 && <span className="ml-1">({kid.days.join(', ')})</span>}
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     {kid.allergies && (

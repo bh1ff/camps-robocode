@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 
+// Wristband colour per group
+const GROUP_WRISTBAND: Record<string, string> = {
+  A: 'purple',
+  B: 'orange',
+  C: 'pink',
+  D: 'green',
+  E: 'red',
+  F: 'yellow',
+};
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -35,6 +45,43 @@ export async function GET(
       return NextResponse.json({ error: 'Camp not found' }, { status: 404 });
     }
 
+    // Find sibling day-camps (same location & season) to determine each kid's booked days
+    let siblingCamps: { id: string; name: string; startDate: Date }[] = [];
+    if (camp.locationId && camp.seasonId) {
+      siblingCamps = await prisma.camp.findMany({
+        where: { locationId: camp.locationId, seasonId: camp.seasonId },
+        select: { id: true, name: true, startDate: true },
+        orderBy: { startDate: 'asc' },
+      });
+    }
+
+    // Build a map of childName → day labels across all sibling camps
+    const childDaysMap: Record<string, string[]> = {};
+    if (siblingCamps.length > 1) {
+      const allSiblingGroups = await prisma.group.findMany({
+        where: { campId: { in: siblingCamps.map((c) => c.id) } },
+        include: {
+          children: { select: { firstName: true, lastName: true, age: true } },
+          camp: { select: { id: true, name: true } },
+        },
+      });
+
+      for (const group of allSiblingGroups) {
+        // Extract day label from camp name e.g. "Shirley - Monday" → "Mon"
+        const campName = group.camp.name;
+        const dayMatch = campName.match(/(Monday|Tuesday|Wednesday|Thursday|Friday)/i);
+        const dayLabel = dayMatch ? dayMatch[1].slice(0, 3) : campName;
+
+        for (const child of group.children) {
+          const key = `${child.firstName} ${child.lastName}`.toLowerCase();
+          if (!childDaysMap[key]) childDaysMap[key] = [];
+          if (!childDaysMap[key].includes(dayLabel)) {
+            childDaysMap[key].push(dayLabel);
+          }
+        }
+      }
+    }
+
     const scheduleSlots = await prisma.scheduleSlot.findMany({
       where: { group: { campId } },
       include: {
@@ -57,18 +104,21 @@ export async function GET(
         checkedIn: boolean;
         checkedOut: boolean;
         attended: string[];
+        days: string[];
       }[];
     }> = {};
 
     for (const group of camp.groups) {
       groups[group.name] = {
         ageRange: group.ageRange,
-        color: group.color,
+        color: GROUP_WRISTBAND[group.name] || group.color,
         kids: group.children.map((child) => {
           const dayBooking = child.dayBookings[0];
+          const fullName = `${child.firstName} ${child.lastName}`;
+          const days = childDaysMap[fullName.toLowerCase()] || [];
           return {
             id: child.id,
-            name: `${child.firstName} ${child.lastName}`,
+            name: fullName,
             age: child.age,
             allergies: child.allergyDetails || '',
             hasSEND: child.hasSEND,
@@ -76,6 +126,7 @@ export async function GET(
             checkedIn: dayBooking?.checkedIn ?? false,
             checkedOut: dayBooking?.checkedOut ?? false,
             attended: child.attendances.map((a) => `session-${a.session.order}`),
+            days,
           };
         }),
       };

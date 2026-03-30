@@ -303,11 +303,17 @@ async function createDayCamp(
     },
   });
 
+  // Wristband colours per group
+  const wristbandColors: Record<string, string> = {
+    A: 'purple', B: 'orange', C: 'pink', D: 'green', E: 'red', F: 'yellow',
+  };
+
   // Create groups and children
   for (const [groupName, groupData] of Object.entries(groups)) {
     await prisma.group.create({
       data: {
         name: groupName,
+        color: wristbandColors[groupName] || 'blue',
         ageRange: groupData.ageRange,
         campId: camp.id,
         children: {

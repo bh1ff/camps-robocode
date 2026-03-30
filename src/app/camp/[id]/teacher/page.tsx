@@ -13,6 +13,7 @@ interface Kid {
   checkedIn: boolean;
   checkedOut: boolean;
   attended: string[];
+  days: string[];
 }
 
 interface Group {
@@ -319,7 +320,7 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
                                           {!kid.checkedIn && (
                                             <span className="w-2 h-2 rounded-full bg-red-400 flex-shrink-0" title="Not checked in" />
                                           )}
-                                          {kid.name}
+                                          {kid.name}{kid.days?.length > 0 && <span className="text-[#05575c]/50 text-xs ml-0.5">({kid.days.join(', ')})</span>}
                                           {kid.allergies && (
                                             <span className="text-xs bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full">
                                               {kid.allergies}
