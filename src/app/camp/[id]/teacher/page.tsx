@@ -44,6 +44,19 @@ interface CampData {
   };
 }
 
+const GROUP_COLORS: Record<string, { bg: string; text: string; band: string }> = {
+  purple: { bg: 'bg-purple-200', text: 'text-purple-800', band: 'bg-purple-500' },
+  orange: { bg: 'bg-orange-200', text: 'text-orange-800', band: 'bg-orange-500' },
+  pink: { bg: 'bg-pink-200', text: 'text-pink-800', band: 'bg-pink-500' },
+  green: { bg: 'bg-green-200', text: 'text-green-800', band: 'bg-green-500' },
+  red: { bg: 'bg-red-200', text: 'text-red-800', band: 'bg-red-500' },
+  yellow: { bg: 'bg-yellow-200', text: 'text-yellow-800', band: 'bg-yellow-500' },
+};
+
+function getGroupColor(color: string) {
+  return GROUP_COLORS[color] || GROUP_COLORS.purple;
+}
+
 function getAreaTypeBgLight(type: string): string {
   switch (type) {
     case 'mechanical': return 'bg-blue-200 text-blue-900 border border-blue-400';
@@ -286,8 +299,9 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
                             return (
                               <div key={groupId} className="bg-[#f0f7f7] rounded-xl p-4">
                                 <div className="flex items-center justify-between mb-3">
-                                  <h4 className="font-semibold text-[#003439]">
-                                    Group {groupId} <span className="font-normal text-[#05575c]/60">({group.ageRange})</span>
+                                  <h4 className="font-semibold text-[#003439] flex items-center gap-2">
+                                    <span className={`w-4 h-4 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white flex-shrink-0`} />
+                                    Group {groupId} <span className="font-normal text-[#05575c]/60 capitalize">({group.color} band, {group.ageRange})</span>
                                   </h4>
                                   <div className="flex items-center gap-2">
                                     <span className="text-xs text-[#05575c]/60">{attendedCount}/{group.kids.length}</span>
@@ -400,9 +414,12 @@ export default function CampTeacherPage({ params }: { params: Promise<{ id: stri
             {Object.entries(data.groups).map(([groupId, group]) => (
               <div key={groupId} className="robo-card p-6">
                 <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-heading text-[#003439]">Group {groupId}</h3>
-                    <p className="text-sm text-[#05575c]/60">Ages {group.ageRange} | {group.kids.length} campers</p>
+                  <div className="flex items-center gap-2">
+                    <span className={`w-5 h-5 rounded-full ${getGroupColor(group.color).band} ring-2 ring-white flex-shrink-0`} />
+                    <div>
+                      <h3 className="text-xl font-heading text-[#003439]">Group {groupId}</h3>
+                      <p className="text-sm text-[#05575c]/60 capitalize">{group.color} band | Ages {group.ageRange} | {group.kids.length} campers</p>
+                    </div>
                   </div>
                   <span className="robo-badge">{group.kids.length}</span>
                 </div>

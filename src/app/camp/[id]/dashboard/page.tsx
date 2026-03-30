@@ -764,9 +764,19 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(data.schedule.rotation).map(([groupId, rotation]) => (
+                {Object.entries(data.schedule.rotation).map(([groupId, rotation]) => {
+                  const gc = getGroupColor(data.groups[groupId]?.color || 'blue');
+                  return (
                   <tr key={groupId} className="border-b border-[#00adb3]/10 hover:bg-[#00adb3]/5">
-                    <td className="py-4 px-4 font-semibold text-[#003439]">Group {groupId}</td>
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className={`w-4 h-4 rounded-full ${gc.band} ring-2 ring-white flex-shrink-0`} />
+                        <div>
+                          <span className="font-semibold text-[#003439]">Group {groupId}</span>
+                          <p className="text-xs text-[#05575c]/60 capitalize">{data.groups[groupId]?.color} band</p>
+                        </div>
+                      </div>
+                    </td>
                     {rotation.map((areaId, idx) => {
                       const area = data.schedule.areas.find(a => a.id === areaId);
                       return (
@@ -778,7 +788,8 @@ export default function CampDashboardPage({ params }: { params: Promise<{ id: st
                       );
                     })}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
 
