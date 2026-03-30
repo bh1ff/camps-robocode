@@ -136,7 +136,16 @@ export default function CampLoginPage({ params }: { params: Promise<{ id: string
           </button>
         </form>
 
-        <div className="mt-6 text-center">
+        <div className="mt-6 flex items-center justify-between">
+          <button
+            onClick={() => router.push('/')}
+            className="text-sm text-white/70 hover:text-white transition-colors flex items-center gap-1"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Camps
+          </button>
           <a href="/admin" className="text-sm text-[#00adb3] hover:underline">
             Admin Panel
           </a>
