@@ -4,7 +4,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
-  LayoutDashboard, CalendarDays, ClipboardList, Upload,
+  LayoutDashboard, CalendarDays, ClipboardList, Upload, FileBarChart,
   LogOut, Menu, X, ChevronRight,
 } from 'lucide-react';
 
@@ -23,6 +23,7 @@ const NAV_ITEMS = [
   { href: '/admin/seasons', label: 'Seasons', icon: CalendarDays },
   { href: '/admin/bookings', label: 'Bookings', icon: ClipboardList },
   { href: '/admin/import', label: 'Import Data', icon: Upload, superadminOnly: true },
+  { href: '/admin/extract', label: 'Extract Data', icon: FileBarChart, superadminOnly: true },
 ];
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
